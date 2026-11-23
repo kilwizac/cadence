@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from "react";
-import { Accordion, ActionIcon, Badge, Button, Chip, Group, Paper, Select, Stack, Text, TextInput, Textarea, Tooltip } from "@mantine/core";
+import { Accordion, ActionIcon, Badge, Button, Chip, Group, MultiSelect, Paper, Select, SimpleGrid, Stack, Text, TextInput, Textarea, Tooltip } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconX } from "@tabler/icons-react";
-import type { Area, NoteKind, Process, ProcessStatus } from "../../shared/types";
+import type { Area, NoteKind, Person, Process, ProcessStatus } from "../../shared/types";
 import { NOTE_KINDS, PROCESS_STATUSES, findArea, labelOf, newNote, newProcess, newStep, plural, toneOf } from "../model";
+import { OwnerPicker } from "../people/OwnerPicker";
+import { RACI_ROLES, newPerson } from "../people/model";
 import type { Update } from "../store";
 import { StepFields } from "./process/StepFields";
 import { EmptyState, confirmDelete } from "./ui";
 
-export function ProcessesTab({ area, update, initialOpenId }: { area: Area; update: Update; initialOpenId: string | null }) {
+export function ProcessesTab({ area, people, update, initialOpenId }: { area: Area; people: Person[]; update: Update; initialOpenId: string | null }) {
   const [name, setName] = useState("");
   const [openId, setOpenId] = useState<string | null>(initialOpenId);
 
@@ -41,7 +43,7 @@ export function ProcessesTab({ area, update, initialOpenId }: { area: Area; upda
       ) : (
         <Accordion variant="separated" radius="md" value={openId} onChange={setOpenId} chevronPosition="left">
           {area.processes.map((process, index) => (
-            <ProcessItem key={process.id} area={area} process={process} index={index} update={update} />
+            <ProcessItem key={process.id} area={area} people={people} process={process} index={index} update={update} />
           ))}
         </Accordion>
       )}
@@ -49,7 +51,7 @@ export function ProcessesTab({ area, update, initialOpenId }: { area: Area; upda
   );
 }
 
-function ProcessItem({ area, process, index, update }: { area: Area; process: Process; index: number; update: Update }) {
+function ProcessItem({ area, people, process, index, update }: { area: Area; people: Person[]; process: Process; index: number; update: Update }) {
   const [stepText, setStepText] = useState("");
   const [noteText, setNoteText] = useState("");
   const [noteKind, setNoteKind] = useState<NoteKind>("improvement");
@@ -63,6 +65,18 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
   const notes = area.notes.filter((note) => note.processId === process.id && !note.resolved);
   const duration = process.steps.reduce((sum, step) => sum + (step.durationMinutes ?? 0), 0);
   const handoffs = process.steps.filter((step) => step.type === "handoff").length;
+  const owner = people.find((person) => person.id === process.ownerId);
+  const peopleOptions = people.map((person) => ({ value: person.id, label: person.name }));
+
+  const createOwner = (name: string) => {
+    const person = newPerson(name, [area.id]);
+    update((draft) => {
+      const target = findArea(draft, area.id).processes.find((p) => p.id === process.id);
+      if (!target) return;
+      draft.people.push(person);
+      target.ownerId = person.id;
+    });
+  };
 
   const move = (offset: number) =>
     update((draft) => {
@@ -113,7 +127,7 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
             <Text size="xs" c="dimmed" truncate>
               {plural(process.steps.length, "step")} · {plural(process.sopIds.length, "SOP")}
               {notes.length > 0 && ` · ${plural(notes.length, "open note")}`}
-              {process.owner && ` · ${process.owner}`}
+              {owner && ` · ${owner.name}`}
             </Text>
             <Text size="xs" c="dimmed">
               {duration} min estimated · {plural(handoffs, "handoff")}
@@ -134,7 +148,7 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
               value={process.status}
               onChange={(value) => value && edit((p) => void (p.status = value as ProcessStatus))}
             />
-            <TextInput label="Owner" placeholder="Who runs it" value={process.owner} onChange={(event) => edit((p) => void (p.owner = event.currentTarget.value))} />
+            <OwnerPicker options={peopleOptions} value={process.ownerId} onChange={(id) => edit((p) => void (p.ownerId = id))} onCreate={createOwner} />
           </Group>
           <Textarea
             label="Description"
@@ -144,6 +158,27 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
             value={process.description}
             onChange={(event) => edit((p) => void (p.description = event.currentTarget.value))}
           />
+
+          <Stack gap={6}>
+            <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+              RACI
+            </Text>
+            <SimpleGrid cols={2} spacing="xs">
+              {RACI_ROLES.map(({ value, label }) => (
+                <MultiSelect
+                  key={value}
+                  label={label}
+                  size="xs"
+                  searchable
+                  data={peopleOptions}
+                  value={process.raci[value]}
+                  onChange={(ids) => edit((p) => void (p.raci[value] = ids))}
+                  placeholder={process.raci[value].length === 0 ? "Select people" : undefined}
+                  nothingFoundMessage={people.length ? "No matching people" : "Add someone in People first"}
+                />
+              ))}
+            </SimpleGrid>
+          </Stack>
 
           <Stack gap={6}>
             <Text size="xs" fw={700} tt="uppercase" c="dimmed">

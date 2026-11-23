@@ -41,6 +41,7 @@ export function AreaPanel({
       update((draft) => {
         draft.areas = draft.areas.filter((a) => a.id !== area.id);
         draft.flows = draft.flows.filter((flow) => flow.from !== area.id && flow.to !== area.id);
+        for (const person of draft.people) person.areaIds = person.areaIds.filter((id) => id !== area.id);
       });
       onClose();
     });
@@ -122,7 +123,7 @@ export function AreaPanel({
         </Tabs.List>
         <ScrollArea className="panel-body" type="auto">
           <Tabs.Panel value="processes">
-            <ProcessesTab key={focusProcessId ?? "none"} area={area} update={update} initialOpenId={focusProcessId} />
+            <ProcessesTab key={focusProcessId ?? "none"} area={area} people={workspace.people} update={update} initialOpenId={focusProcessId} />
           </Tabs.Panel>
           <Tabs.Panel value="sops">
             <SopsTab area={area} update={update} onOpenSop={onOpenSop} />

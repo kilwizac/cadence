@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Badge, Button, Group, Kbd, Modal, Paper, Stack, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, Button, Group, Kbd, Modal, Paper, SegmentedControl, Stack, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Spotlight, spotlight, type SpotlightActionGroupData } from "@mantine/spotlight";
 import { IconFileText, IconFlag, IconListCheck, IconMapPin, IconNote, IconPlus, IconSearch } from "@tabler/icons-react";
@@ -10,6 +10,7 @@ import { FollowUps } from "./components/FollowUps";
 import { SopEditor } from "./components/SopEditor";
 import { MapScene, type Placement } from "./map/MapScene";
 import { FOOTPRINT, GRID_SIZE, findArea, newArea, plural } from "./model";
+import { PeopleView } from "./people/PeopleView";
 import { useWorkspace, type SaveState, type Update } from "./store";
 import { hasDesktopFiles, storage } from "./storage";
 
@@ -36,8 +37,10 @@ export function App() {
 }
 
 const SAVE_LABEL: Record<SaveState, string> = { saved: "Saved", saving: "Saving…", error: "Couldn't save" };
+type View = "map" | "people";
 
 function Shell({ workspace, saveState, update }: { workspace: Workspace; saveState: SaveState; update: Update }) {
+  const [view, setView] = useState<View>("map");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<PanelTab>("processes");
   const [focusProcessId, setFocusProcessId] = useState<string | null>(null);
@@ -63,20 +66,21 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || adding || openSop) return;
+      if (event.key !== "Escape" || view !== "map" || adding || openSop) return;
       if (placement) setPlacement(null);
       else setSelectedId(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [adding, openSop, placement]);
+  }, [view, adding, openSop, placement]);
 
-  const select = (id: string | null, nextTab: PanelTab = "processes", processId: string | null = null) => {
+  const select = useCallback((id: string | null, nextTab: PanelTab = "processes", processId: string | null = null) => {
+    if (id) setView("map");
     if (id !== selectedId) setOpenSopId(null);
     setSelectedId(id);
     setFocusProcessId(processId);
-    if (id && (id !== selectedId || nextTab !== "processes")) setTab(nextTab);
-  };
+    if (id && (id !== selectedId || nextTab !== "processes" || processId)) setTab(nextTab);
+  }, [selectedId]);
 
   const createArea = (name: string, hue: number, kind: Placement["kind"], x: number, y: number) => {
     const area = newArea(name, hue, kind, x, y);
@@ -130,8 +134,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
       { group: "SOPs", actions: sops },
       { group: "Open notes", actions: notes },
     ].filter((group) => group.actions.length > 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspace]);
+  }, [workspace, select]);
 
   return (
     <div className="app">
@@ -149,6 +152,14 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         <Text size="xs" c="dimmed" className="topbar-stats">
           {plural(workspace.areas.length, "area")} · {plural(totals.processes, "process", "processes")} · {plural(totals.sops, "SOP")}
         </Text>
+        <SegmentedControl
+          aria-label="Workspace view"
+          size="xs"
+          className="view-switcher"
+          data={[{ value: "map", label: "Map" }, { value: "people", label: "People" }]}
+          value={view}
+          onChange={(value) => setView(value as View)}
+        />
         <UnstyledButton className="search-trigger" onClick={() => spotlight.open()}>
           <IconSearch size={15} />
           <span>Search</span>
@@ -159,20 +170,27 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
           {SAVE_LABEL[saveState]}
         </Text>
         <Button
-          variant={showFollowUps ? "light" : "default"}
+          variant={view === "map" && showFollowUps ? "light" : "default"}
           leftSection={<IconFlag size={16} />}
           rightSection={totals.open > 0 ? <Badge size="sm" color="orange" variant="filled" circle={totals.open < 10}>{totals.open}</Badge> : null}
-          onClick={() => setShowFollowUps(!showFollowUps)}
-          aria-pressed={showFollowUps}
+          onClick={() => {
+            setShowFollowUps(view !== "map" || !showFollowUps);
+            setView("map");
+          }}
+          aria-pressed={view === "map" && showFollowUps}
         >
           Follow-ups
         </Button>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => setAdding(true)} disabled={Boolean(placement)}>
+        <Button leftSection={<IconPlus size={16} />} onClick={() => {
+          setView("map");
+          setAdding(true);
+        }} disabled={Boolean(placement)}>
           Add area
         </Button>
       </header>
 
-      <main className="main">
+      {view === "people" && <main className="main"><PeopleView workspace={workspace} update={update} /></main>}
+      <main className="main" style={view !== "map" ? { display: "none" } : undefined}>
         <div className="stage">
           <MapScene
             areas={workspace.areas}
@@ -257,7 +275,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         </Stack>
       </Modal>
 
-      {selected && openSop && <SopEditor key={openSop.id} area={selected} sop={openSop} update={update} onClose={() => setOpenSopId(null)} />}
+      {view === "map" && selected && openSop && <SopEditor key={openSop.id} area={selected} sop={openSop} update={update} onClose={() => setOpenSopId(null)} />}
 
       <Spotlight
         actions={searchActions}

@@ -29,10 +29,22 @@ export interface StepBranch {
   targetStepId: string;
 }
 
+export interface Person {
+  id: string;
+  name: string;
+  role: string;
+  areaIds: string[];
+  email?: string;
+}
+
+export type RaciRole = "responsible" | "accountable" | "consulted" | "informed";
+export type Raci = Record<RaciRole, string[]>;
+
 export interface Process {
   id: string;
   name: string;
-  owner: string;
+  ownerId: string | null;
+  raci: Raci;
   description: string;
   status: ProcessStatus;
   steps: Step[];
@@ -91,6 +103,7 @@ export interface Flow {
 export interface Workspace {
   version: 2;
   name: string;
+  people: Person[];
   areas: Area[];
   flows: Flow[];
 }

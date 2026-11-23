@@ -1,5 +1,6 @@
 import { marked } from "marked";
 import type { Area, AreaKind, Attachment, NoteKind, Process, ProcessStatus, Sop, SopStatus, Step, Workspace } from "../shared/types";
+import { emptyRaci, newPerson } from "./people/model";
 
 export const GRID_SIZE = 18;
 export const FOOTPRINT = 2;
@@ -63,7 +64,7 @@ export const SOP_TEMPLATE = `<h2>Purpose</h2><p>Why this procedure exists.</p>
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 
-export const emptyWorkspace = (): Workspace => ({ version: 2, name: "My Operations", areas: [], flows: [] });
+export const emptyWorkspace = (): Workspace => ({ version: 2, name: "My Operations", people: [], areas: [], flows: [] });
 
 const KIND_KEYWORDS: [AreaKind, RegExp][] = [
   ["shipping", /ship|receiv|logistic|dock|freight/i],
@@ -79,10 +80,30 @@ const KIND_KEYWORDS: [AreaKind, RegExp][] = [
 export const guessKind = (name: string): AreaKind => KIND_KEYWORDS.find(([, pattern]) => pattern.test(name))?.[0] ?? "office";
 
 export function migrate(raw: unknown): Workspace {
-  const workspace = raw as Omit<Workspace, "version"> & { version: number; areas: (Omit<Area, "kind"> & { kind?: AreaKind })[] };
+  const workspace = raw as Omit<Workspace, "version" | "areas"> & {
+    version: number;
+    areas: (Area & { processes: (Process & { owner?: string })[] })[];
+  };
+  workspace.people ??= [];
+  const peopleByName = new Map(workspace.people.map((person) => [person.name.trim().toLowerCase(), person]));
   for (const area of workspace.areas) {
     area.kind ??= guessKind(area.name);
     for (const process of area.processes) {
+      process.raci ??= emptyRaci();
+      const name = process.owner?.trim();
+      if (process.ownerId == null && name) {
+        const key = name.toLowerCase();
+        let person = peopleByName.get(key);
+        if (!person) {
+          person = newPerson(name);
+          workspace.people.push(person);
+          peopleByName.set(key, person);
+        }
+        if (!person.areaIds.includes(area.id)) person.areaIds.push(area.id);
+        process.ownerId = person.id;
+      }
+      process.ownerId ??= null;
+      delete process.owner;
       for (const step of process.steps) {
         step.type ??= "action";
         step.role ??= "";
@@ -118,7 +139,8 @@ export const newArea = (name: string, hue: number, kind: AreaKind, x: number, y:
 export const newProcess = (name: string): Process => ({
   id: uid(),
   name,
-  owner: "",
+  ownerId: null,
+  raci: emptyRaci(),
   description: "",
   status: "unmapped",
   steps: [],

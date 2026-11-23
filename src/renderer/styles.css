@@ -15,7 +15,7 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
   background: rgb(255 255 255 / 0.88); border-bottom: 1px solid var(--border);
   -webkit-app-region: drag; user-select: none;
 }
-.topbar button, .topbar input, .topbar .search-trigger { -webkit-app-region: no-drag; }
+.topbar button, .topbar input, .topbar .search-trigger, .topbar .view-switcher { -webkit-app-region: no-drag; }
 .workspace-name { width: 200px; }
 .workspace-name input { font-weight: 650; font-size: 14px; }
 .save-state { min-width: 70px; text-align: right; }
