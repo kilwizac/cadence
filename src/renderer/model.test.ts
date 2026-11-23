@@ -48,12 +48,24 @@ describe("migrate", () => {
 
     const area = newArea("Production", 212, "production", 0, 0);
     const populated = migrate({ ...legacy, areas: [area] });
-    expect(populated.companyProfile).toEqual({ industry: "", description: "" });
+    expect(populated.companyProfile).toEqual({ industry: "", description: "", confirmed: false });
     expect(populated.areas).toEqual([area]);
 
     const named = migrate({ ...legacy, name: "Acme Fabrication" });
     expect(named.name).toBe("Acme Fabrication");
-    expect(named.companyProfile).toEqual({ industry: "", description: "" });
+    expect(named.companyProfile).toEqual({ industry: "", description: "", confirmed: false });
+  });
+
+  test("requires setup for a saved placeholder profile until the company name is confirmed", () => {
+    const workspace = emptyWorkspace();
+    const companyProfile = { industry: "", description: "" };
+    expect(migrate({ ...workspace, companyProfile }).companyProfile).toBeNull();
+
+    const confirmed = { ...companyProfile, confirmed: true };
+    expect(migrate({ ...workspace, companyProfile: confirmed }).companyProfile).toEqual(confirmed);
+
+    const detailed = migrate({ ...workspace, companyProfile: { ...companyProfile, industry: "Fabrication" } });
+    expect(detailed.companyProfile).toEqual({ industry: "Fabrication", description: "", confirmed: false });
   });
 
   test("converts legacy written SOP markdown to HTML without changing file SOPs", () => {

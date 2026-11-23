@@ -61,7 +61,7 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
   display: inline-flex; align-items: center; gap: 4px; padding: 0 5px;
   font: 650 11px/1 ui-monospace, monospace; color: #465852;
 }
-.hint, .welcome, .followups { z-index: 30; }
+.hint, .followups { z-index: 30; }
 
 .map-label, .map-preview {
   position: relative; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
@@ -97,7 +97,6 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
 .flow-tag.selected { border-color: #729486; color: #1d4941; }
 
 .hint { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: #1a1e24; }
-.welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(480px, calc(100% - 40px)); }
 
 .panel { width: 460px; flex: none; display: flex; flex-direction: column; background: white; border-left: 1px solid var(--border); min-height: 0; }
 .area-swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }

@@ -111,6 +111,7 @@ export interface Flow {
 export interface CompanyProfile {
   industry: string;
   description: string;
+  confirmed: boolean;
 }
 
 export interface Workspace {

@@ -92,10 +92,15 @@ export function migrate(raw: unknown): Workspace {
   const name = workspace.name.trim();
   const hasExistingWork = workspace.areas.length > 0 || workspace.people.length > 0 || workspace.flows.length > 0;
   const hasCustomName = name !== "" && name !== DEFAULT_WORKSPACE_NAME;
-  workspace.companyProfile ??= hasExistingWork || hasCustomName ? { industry: "", description: "" } : null;
-  if (workspace.companyProfile) {
+  const profile = workspace.companyProfile;
+  const hasProfileDetails = Boolean(profile?.industry?.trim() || profile?.description?.trim());
+  if (profile?.confirmed || hasProfileDetails || hasCustomName || hasExistingWork) {
+    workspace.companyProfile ??= { industry: "", description: "", confirmed: false };
     workspace.companyProfile.industry ??= "";
     workspace.companyProfile.description ??= "";
+    workspace.companyProfile.confirmed ??= false;
+  } else {
+    workspace.companyProfile = null;
   }
   const peopleByName = new Map(workspace.people.map((person) => [person.name.trim().toLowerCase(), person]));
   for (const area of workspace.areas) {

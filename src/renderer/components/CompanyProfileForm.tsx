@@ -19,7 +19,7 @@ export function CompanyProfileForm({ workspace, update, onSave }: {
     if (!companyName) return;
     update((draft) => {
       draft.name = companyName;
-      draft.companyProfile = { industry: industry.trim(), description: description.trim() };
+      draft.companyProfile = { industry: industry.trim(), description: description.trim(), confirmed: true };
     });
     onSave?.();
   };

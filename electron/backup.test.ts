@@ -21,7 +21,7 @@ test("replaces the workspace and all attachment files, keeping the latest edits 
   area.sops.push(newFileSop({ storedName: "drawing.pdf", originalName: "Drawing.pdf", size: 4 }));
   const original = {
     ...emptyWorkspace(), name: "Original", areas: [area],
-    companyProfile: { industry: "Manufacturing", description: "Makes inspection fixtures." },
+    companyProfile: { industry: "Manufacturing", description: "Makes inspection fixtures.", confirmed: true },
   };
   const attachment = join(attachmentsDir(root), "drawing.pdf");
   const archive = join(root, "original.cadence");
@@ -68,7 +68,7 @@ test("restores a legacy workspace through the existing migration", async () => {
   await saveBackup(root, archive, legacy as unknown as Workspace);
   const restored = await restoreBackup(root, archive, current);
   expect(restored.version).toBe(2);
-  expect(restored.companyProfile).toEqual({ industry: "", description: "" });
+  expect(restored.companyProfile).toEqual({ industry: "", description: "", confirmed: false });
   expect(restored.areas[0].kind).toBe("production");
   expect(restored.areas[0].sops[0].content).toContain("<h1>Check stock</h1>");
 });

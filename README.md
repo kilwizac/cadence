@@ -31,7 +31,7 @@ Signing and notarization are optional. Set `CSC_LINK` and `CSC_KEY_PASSWORD` to 
 ## Using it
 
 - **Create a company profile** to start your map. Click the company name in the toolbar to edit the profile later.
-- **Add the first area** from the map's welcome card. Add more with **Add area**, pick its type, then click an open spot to place it. Drag a lot to move it, drag the ground to pan, scroll or pinch to zoom.
+- Use **Add area**, pick its type, then click an open spot on the map to place it. Drag a lot to move it, drag the ground to pan, scroll or pinch to zoom.
 - **Explore the site model.** The map opens framed around your areas. Use **Show whole site** to see the coordinate grid, **Frame areas** to return, and the compass arrows to inspect the yards from four sides. **Map labels** toggles the callouts without hiding the buildings or routes.
 - **⌘K** searches areas, processes, SOPs and open notes.
 - **Processes** each add a piece of equipment to the area's lot, so busier areas fill in. Give each one a status (Not mapped → Mapped → Documented → Optimized), an owner, ordered steps and linked SOPs.

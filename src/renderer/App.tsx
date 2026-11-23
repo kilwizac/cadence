@@ -11,7 +11,7 @@ import { FollowUps } from "./components/FollowUps";
 import { SopEditor } from "./components/SopEditor";
 import { WorkspaceMenu } from "./components/WorkspaceMenu";
 import { MapScene, type Placement } from "./map/MapScene";
-import { FOOTPRINT, GRID_SIZE, findArea, newArea, plural } from "./model";
+import { findArea, newArea, plural } from "./model";
 import { PeopleView } from "./people/PeopleView";
 import { useWorkspace, type SaveState, type Update } from "./store";
 import { hasDesktopFiles, storage } from "./storage";
@@ -262,24 +262,6 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
             </Paper>
           )}
 
-          {workspace.areas.length === 0 && !placement && (
-            <Paper className="welcome" shadow="lg" radius="lg" p="xl" withBorder>
-              <Stack gap="xs">
-                <Title order={2}>Add your first area</Title>
-                <Text c="dimmed" style={{ textWrap: "pretty", overflowWrap: "anywhere" }}>
-                  {workspace.name.trim()
-                    ? <>Choose a team or function at <strong>{workspace.name}</strong> to start mapping.</>
-                    : "Choose a team or function to start mapping."}
-                </Text>
-                <AreaForm
-                  existing={workspace.areas}
-                  submitLabel="Add to the map"
-                  onSubmit={(name, hue, kind) => createArea(name, hue, kind, GRID_SIZE / 2 - FOOTPRINT / 2, GRID_SIZE / 2 - FOOTPRINT / 2)}
-                />
-              </Stack>
-            </Paper>
-          )}
-
           {showFollowUps && <FollowUps workspace={workspace} update={update} onClose={() => setShowFollowUps(false)} onJump={(areaId) => select(areaId, "notes")} />}
         </div>
 
@@ -305,7 +287,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
       <Modal opened={adding} onClose={() => setAdding(false)} title="Add an area" radius="lg" size={480}>
         <Stack gap="md">
           <Text size="sm" c="dimmed" mt={-8}>
-            Name the next part of the business, then click where it sits on the map.
+            Name the area, then click where it sits on the map.
           </Text>
           <AreaForm
             existing={workspace.areas}
