@@ -1,9 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, shell, type OpenDialogOptions } from "electron";
 import { promises as fs } from "node:fs";
-import { basename, extname, join, relative, isAbsolute } from "node:path";
+import { basename, extname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
 import type { Attachment, Workspace } from "../src/shared/types";
+import { resolveBundlePath } from "./bundle-path";
 
 app.setName("Cadence");
 
@@ -72,9 +73,8 @@ ipcMain.handle("data:reveal", () => shell.openPath(app.getPath("userData")));
 function serveBundle() {
   const root = join(app.getAppPath(), "dist");
   protocol.handle("app", (request) => {
-    const file = join(root, decodeURIComponent(new URL(request.url).pathname));
-    const inside = relative(root, file);
-    if (inside.startsWith("..") || isAbsolute(inside)) return new Response("Not found", { status: 404 });
+    const file = resolveBundlePath(root, request.url);
+    if (file === null) return new Response("Not found", { status: 404 });
     return net.fetch(pathToFileURL(file).toString());
   });
 }

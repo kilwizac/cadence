@@ -12,7 +12,8 @@
     "build:renderer": "vite build",
     "build": "bun run typecheck && bun run build:renderer && bun run build:electron",
     "start": "bun run build && electron .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "trustedDependencies": [
     "electron",
