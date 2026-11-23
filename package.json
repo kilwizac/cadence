@@ -23,6 +23,7 @@
     "esbuild"
   ],
   "dependencies": {
+    "@dagrejs/dagre": "^3.1.3",
     "@mantine/charts": "^9.8.2",
     "@mantine/core": "^9.8.2",
     "@mantine/dropzone": "^9.8.2",
@@ -38,6 +39,7 @@
     "@tiptap/pm": "^3.35.0",
     "@tiptap/react": "^3.35.0",
     "@tiptap/starter-kit": "^3.35.0",
+    "@xyflow/react": "^13.0.2",
     "docx": "^9.16.0",
     "htmlparser2": "^12.0.0",
     "immer": "^11.2.10",

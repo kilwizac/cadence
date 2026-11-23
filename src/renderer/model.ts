@@ -110,6 +110,7 @@ export function migrate(raw: unknown): Workspace {
         step.system ??= "";
         step.durationMinutes ??= 0;
         step.branches ??= [];
+        step.sequence ??= "list";
       }
     }
     for (const sop of area.sops) {
@@ -150,7 +151,7 @@ export const newProcess = (name: string): Process => ({
   createdAt: now(),
 });
 
-export const newStep = (text: string): Step => ({ id: uid(), text, type: "action", role: "", system: "", durationMinutes: 0, branches: [] });
+export const newStep = (text: string): Step => ({ id: uid(), text, type: "action", role: "", system: "", durationMinutes: 0, branches: [], sequence: "list" });
 
 export const newWrittenSop = (): Sop => ({
   id: uid(),

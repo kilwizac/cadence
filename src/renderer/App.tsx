@@ -69,6 +69,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || view !== "map" || adding || openSop) return;
+      if (event.composedPath().some((target) => target instanceof HTMLElement && target.getAttribute("role") === "dialog")) return;
       if (placement) setPlacement(null);
       else setSelectedId(null);
     };

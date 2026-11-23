@@ -21,6 +21,7 @@ export interface Step {
   system?: string;
   durationMinutes?: number;
   branches?: StepBranch[];
+  sequence?: "list" | "end" | { targetStepId: string };
 }
 
 export interface StepBranch {

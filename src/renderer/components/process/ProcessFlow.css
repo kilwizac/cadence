@@ -1,0 +1,69 @@
+.process-flow-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(248px, 29%);
+  gap: var(--mantine-spacing-sm);
+  height: min(67vh, 660px);
+  min-height: 320px;
+}
+
+.process-flow-layout:not(:has(.process-flow-sidebar)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.process-flow-canvas {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--mantine-color-default-hover);
+}
+
+.process-flow-sidebar {
+  min-height: 0;
+  overflow: auto;
+}
+
+.process-flow-zoom {
+  position: absolute;
+  z-index: 6;
+  bottom: var(--mantine-spacing-xs);
+  left: var(--mantine-spacing-xs);
+}
+
+.process-flow-node {
+  border-top-width: 3px;
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+.process-flow-node-selected,
+.process-flow-canvas .react-flow__node:focus-visible .process-flow-node {
+  outline: 2px solid var(--mantine-color-blue-filled);
+  outline-offset: 2px;
+}
+
+.process-flow-canvas .react-flow__handle {
+  width: 13px;
+  height: 13px;
+  background: var(--mantine-color-dimmed);
+  border: 2px solid var(--mantine-color-body);
+}
+
+.process-flow-canvas .react-flow__handle-connectingto,
+.process-flow-canvas .react-flow__handle:hover {
+  background: var(--mantine-color-blue-filled);
+}
+
+@media (max-width: 740px) {
+  .process-flow-layout {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .process-flow-canvas {
+    height: min(50vh, 420px);
+    min-height: 230px;
+  }
+
+  .process-flow-sidebar {
+    overflow: visible;
+  }
+}

@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Accordion, ActionIcon, Badge, Button, Chip, Group, MultiSelect, Paper, Select, SimpleGrid, Stack, Text, TextInput, Textarea, Tooltip } from "@mantine/core";
-import { IconArrowDown, IconArrowUp, IconX } from "@tabler/icons-react";
-import type { Area, NoteKind, Person, Process, ProcessStatus } from "../../shared/types";
+import { IconArrowDown, IconArrowUp, IconSitemap, IconX } from "@tabler/icons-react";
+import type { Area, NoteKind, Person, Process, ProcessStatus, Step } from "../../shared/types";
 import { NOTE_KINDS, PROCESS_STATUSES, findArea, labelOf, newNote, newProcess, newStep, plural, toneOf } from "../model";
 import { OwnerPicker } from "../people/OwnerPicker";
 import { RACI_ROLES, newPerson } from "../people/model";
 import type { Update } from "../store";
+import { ProcessFlowModal } from "./process/ProcessFlowModal";
 import { StepFields } from "./process/StepFields";
+import { removeProcessStep } from "./process/workflow";
 import { EmptyState, confirmDelete } from "./ui";
 
 export function ProcessesTab({ area, people, update, initialOpenId }: { area: Area; people: Person[]; update: Update; initialOpenId: string | null }) {
@@ -55,6 +57,7 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
   const [stepText, setStepText] = useState("");
   const [noteText, setNoteText] = useState("");
   const [noteKind, setNoteKind] = useState<NoteKind>("improvement");
+  const [showFlow, setShowFlow] = useState(false);
 
   const edit = (recipe: (draft: Process) => void) =>
     update((draft) => {
@@ -106,6 +109,12 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
     edit((p) => {
       const [item] = p.steps.splice(from, 1);
       p.steps.splice(to, 0, item);
+    });
+
+  const editStep = (id: string, changes: Partial<Step>) =>
+    edit((p) => {
+      const step = p.steps.find((candidate) => candidate.id === id);
+      if (step) Object.assign(step, changes);
     });
 
   const addNote = (event: FormEvent) => {
@@ -181,9 +190,12 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
           </Stack>
 
           <Stack gap={6}>
-            <Text size="xs" fw={700} tt="uppercase" c="dimmed">
-              Steps
-            </Text>
+            <Group justify="space-between">
+              <Text size="xs" fw={700} tt="uppercase" c="dimmed">Steps</Text>
+              <Button size="xs" variant="light" leftSection={<IconSitemap size={15} />} onClick={() => setShowFlow(true)}>
+                Open flow
+              </Button>
+            </Group>
             {process.steps.map((step, stepIndex) => (
               <Paper key={step.id} withBorder p="xs">
                 <Stack gap={6}>
@@ -194,10 +206,7 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
                       size="xs"
                       aria-label={`Step ${stepIndex + 1}`}
                       value={step.text}
-                      onChange={(event) => {
-                        const text = event.currentTarget.value;
-                        edit((p) => void (p.steps[stepIndex].text = text));
-                      }}
+                      onChange={(event) => editStep(step.id, { text: event.currentTarget.value })}
                     />
                     <ActionIcon variant="subtle" color="gray" aria-label="Move step up" disabled={stepIndex === 0} onClick={() => moveStep(stepIndex, stepIndex - 1)}>
                       <IconArrowUp size={15} />
@@ -211,11 +220,16 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
                     >
                       <IconArrowDown size={15} />
                     </ActionIcon>
-                    <ActionIcon variant="subtle" color="gray" aria-label="Remove step" onClick={() => edit((p) => void p.steps.splice(stepIndex, 1))}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
+                      aria-label={`Remove step ${stepIndex + 1}`}
+                      onClick={() => confirmDelete("Delete this step?", "Its connections will be removed as well.", () => edit((p) => removeProcessStep(p, step.id)))}
+                    >
                       <IconX size={15} />
                     </ActionIcon>
                   </Group>
-                  <StepFields step={step} onChange={(changes) => edit((p) => void Object.assign(p.steps[stepIndex], changes))} />
+                  <StepFields step={step} onChange={(changes) => editStep(step.id, changes)} />
                 </Stack>
               </Paper>
             ))}
@@ -287,6 +301,7 @@ function ProcessItem({ area, people, process, index, update }: { area: Area; peo
           </Group>
         </Stack>
       </Accordion.Panel>
+      <ProcessFlowModal opened={showFlow} onClose={() => setShowFlow(false)} process={process} edit={edit} />
     </Accordion.Item>
   );
 }
