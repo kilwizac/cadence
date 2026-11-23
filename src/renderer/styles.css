@@ -36,31 +36,58 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
 
 .main { display: flex; min-height: 0; }
 .stage { position: relative; flex: 1; min-width: 0; }
-.canvas { position: absolute; inset: 0; }
+.canvas {
+  position: absolute; inset: 0; overflow: hidden;
+  background: radial-gradient(ellipse at 42% 28%, #f1f0e7, #e0e2d8 70%, #cbd1c7);
+}
 .canvas canvas { touch-action: none; }
 
-.zoom-controls { position: absolute; left: 14px; bottom: 14px; display: flex; gap: 2px; z-index: 30; }
+.zoom-controls, .bearing-controls {
+  position: absolute; bottom: 14px; display: flex; gap: 2px; align-items: center; z-index: 30;
+  background: #fbfcf7; border-color: #bac3ba; box-shadow: 0 2px 6px rgb(33 51 47 / 12%);
+}
+.zoom-controls { left: 14px; }
+.bearing-controls { right: 14px; }
+.canvas .mantine-ActionIcon-root svg { width: 17px; height: 17px; stroke-width: 1.8; }
+.map-tool-divider { width: 1px; height: 16px; background: #cdd4cb; margin: 0 3px; }
+.bearing {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0 5px;
+  font: 650 11px/1 ui-monospace, monospace; color: #465852;
+}
 .hint, .welcome, .followups { z-index: 30; }
 
-.map-label {
-  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  height: 26px; padding: 0 10px; border-radius: 13px; cursor: pointer;
-  background: white; border: 1px solid #cfd4dc; color: #1a1e24;
-  font: 600 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  box-shadow: 0 1px 3px rgb(16 24 40 / 0.14);
+.map-label, .map-preview {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  min-height: 26px; padding: 0 8px; border-radius: 5px; border: 1px solid #aab7ad;
+  background: #fcfcf6; color: #263a34;
+  font: 650 12.5px/1.1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  box-shadow: 0 2px 4px rgb(31 47 42 / 13%);
 }
-.map-label:hover { border-color: var(--accent); }
-.map-label.selected { background: #1a1e24; border-color: #1a1e24; color: white; }
-.map-label-count { color: #8a93a3; font-weight: 600; }
-.map-label.selected .map-label-count { color: #aab2c0; }
+.map-label { cursor: pointer; }
+.map-label::before { content: ""; width: 4px; height: 14px; background: var(--lot-accent); border-radius: 2px; flex: none; }
+.map-label::after, .map-preview::after {
+  content: ""; position: absolute; left: 50%; top: 100%; height: 7px; border-left: 1px solid #61776e; pointer-events: none;
+}
+.map-label-name { max-width: 156px; overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) { .map-label:hover:not(:disabled) { border-color: #4a695e; background: white; } }
+.map-label:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.map-label.selected, .map-label.selected:hover:not(:disabled) { background: #243e37; border-color: #243e37; color: white; }
+.map-label-count { color: #56685f; font: 600 10px/1 ui-monospace, monospace; }
+.map-label.selected .map-label-count { color: #d4ded5; }
 .map-label-badge {
-  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; display: inline-grid; place-items: center;
-  background: #f08a24; color: white; font-size: 10.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 2px; height: 16px; padding: 0 4px; border-radius: 3px;
+  background: #f5dfac; color: #67451e; font-size: 10px; font-weight: 700;
 }
+.map-preview { background: #ecf6e9; color: #274b36; border-color: #73927e; }
+.map-preview.blocked { background: #fff2ed; color: #842f23; border-color: #b36050; }
+.preview-address { padding-left: 6px; border-left: 1px solid #afc7b3; font: 600 10px/1 ui-monospace, monospace; }
+.labels-hidden .map-label, .labels-hidden .flow-tag { display: none; }
 .flow-tag {
-  white-space: nowrap; font: 600 11px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; color: #55657e;
-  background: rgb(247 248 250 / 0.92); padding: 3px 6px; border-radius: 5px;
+  display: block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 550 10.5px/1.2 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; color: #375851;
+  background: #edf2e8; border: 1px solid #a4b6aa; padding: 2px 5px; border-radius: 3px;
 }
+.flow-tag.selected { border-color: #729486; color: #1d4941; }
 
 .hint { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: #1a1e24; }
 .welcome { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(480px, calc(100% - 40px)); }

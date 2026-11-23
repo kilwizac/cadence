@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 256 256">
+  <defs>
+    <pattern id="hatch" patternUnits="userSpaceOnUse" width="12" height="12">
+      <path d="M-3 3 3-3m0 12 12-12m-6 18 12-12" fill="none" stroke="#dcc481" stroke-width="3"/>
+    </pattern>
+    <pattern id="grate" patternUnits="userSpaceOnUse" width="4" height="4">
+      <path d="M1 0v4" stroke="#394a4d" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="256" height="256" fill="#697675"/>
+  <path d="M3 3h158v159H3z" fill="#aeb6ac" stroke="#536364" stroke-width="2"/>
+  <path d="M81 4v156M4 82h156" fill="none" stroke="#98a59e" stroke-width="1"/>
+  <path d="M163 6h8v165H6v-8h157z" fill="url(#hatch)"/>
+  <g fill="none" stroke="#e1e2cf" stroke-width="1.7">
+    <path d="M247 9h-60m61 0v74m0 4h-61m61 0v68m0 4h-61"/>
+    <path d="M8 246v-59m0 61h72m5 0v-61m0 61h70m6 0v-61"/>
+    <path d="M247 177v70h-70" stroke-dasharray="7 5"/>
+  </g>
+  <path d="M175 14v131m-30 30H13" stroke="#d6b577" stroke-width="1.8" fill="none" stroke-dasharray="8 5"/>
+  <path d="M186 165h34v5h-34zM14 233h31v4H14z" fill="url(#grate)"/>
+  <g fill="#dbba74">
+    <path d="M235 19h5v14h-5zM235 98h5v14h-5zM19 235h14v5H19zM98 235h14v5H98z"/>
+  </g>
+</svg>

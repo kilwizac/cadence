@@ -45,5 +45,3 @@ export const KIND_MODELS: Record<AreaKind, KindModels> = {
 };
 
 export const modelUrl = (id: string) => `./models/${id}.glb`;
-
-export const ALL_MODELS = [...new Set(Object.values(KIND_MODELS).flatMap((kind) => [kind.hero, ...kind.props]))];

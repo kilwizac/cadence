@@ -31,11 +31,12 @@ Signing and notarization are optional. Set `CSC_LINK` and `CSC_KEY_PASSWORD` to 
 ## Using it
 
 - **Add the first area** from the welcome card. Add more with **Add area**, pick its type, then click an open spot to place it. Drag a lot to move it, drag the ground to pan, scroll or pinch to zoom.
+- **Explore the site model.** The map opens framed around your areas. Use **Show whole site** to see the coordinate grid, **Frame areas** to return, and the compass arrows to inspect the yards from four sides. **Map labels** toggles the callouts without hiding the buildings or routes.
 - **⌘K** searches areas, processes, SOPs and open notes.
 - **Processes** each add a piece of equipment to the area's lot, so busier areas fill in. Give each one a status (Not mapped → Mapped → Documented → Optimized), an owner, ordered steps and linked SOPs.
 - **SOPs** are written in a rich-text editor (with a starter template) or attached by dropping files onto the SOPs tab. Attachments are copied into the app's library so the map keeps working if the original moves.
 - **Notes** are tagged Improvement, Come back to, Issue or Question, optionally tied to a process. **Follow-ups** collects every open note across the map.
-- **Flows** connect areas to show what gets handed off.
+- **Flows** show what gets handed off. Follow the arrows between yards; selecting an area highlights its incoming and outgoing routes.
 
 ## Data
 

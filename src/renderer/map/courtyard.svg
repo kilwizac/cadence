@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 256 256">
+  <defs>
+    <pattern id="pavers" patternUnits="userSpaceOnUse" width="18" height="12">
+      <path d="M0 0h18M0 6h18M4 0v6m9 0v6" stroke="#b7ab99" stroke-width=".9" fill="none"/>
+    </pattern>
+  </defs>
+  <rect width="256" height="256" fill="#869393"/>
+  <path d="M0 0h175v175H0z" fill="#d7cbb5" stroke="#dfe0cd" stroke-width="3"/>
+  <path d="M0 0h174v174H0z" fill="url(#pavers)"/>
+  <path d="M5 5h152v152H5z" fill="#c2c8b8" stroke="#a7af9f"/>
+  <g stroke="#e6e8d8" stroke-width="2" fill="none">
+    <path d="M250 5h-44m44 76h-63m63 78h-63m63-154v151"/>
+    <path d="M5 250v-44m77 44v-63m77 63v-63M5 250h151"/>
+  </g>
+  <g stroke="#e6e8d8" stroke-width="4">
+    <path d="M193 167v10m9-10v10m9-10v10m9-10v10m9-10v10"/>
+  </g>
+  <path d="M183 242h54v-56" stroke="#bac7bb" stroke-width="2" fill="none"/>
+  <path d="M242 241h6v7h-6z" fill="#606f70"/>
+</svg>
