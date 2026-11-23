@@ -11,7 +11,9 @@ interface WorkspaceContext {
   workspace: Workspace | null;
   loadError: string | null;
   saveState: SaveState;
+  workspaceSession: number;
   update: Update;
+  restoreBackup(): Promise<boolean>;
 }
 
 const Context = createContext<WorkspaceContext | null>(null);
@@ -20,36 +22,66 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("saved");
-  const hydrated = useRef<Workspace | null>(null);
+  const [workspaceSession, setWorkspaceSession] = useState(0);
+  const [restoring, setRestoring] = useState(false);
+  const saved = useRef<Workspace | null>(null);
+  const restoreLock = useRef(false);
 
   useEffect(() => {
     storage
       .loadWorkspace()
       .then((loaded) => {
         const initial = loaded ? migrate(loaded) : emptyWorkspace();
-        hydrated.current = initial;
+        saved.current = initial;
         setWorkspace(initial);
       })
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : String(error)));
   }, []);
 
   useEffect(() => {
-    if (!workspace || workspace === hydrated.current) return;
+    if (!workspace || workspace === saved.current || restoring) return;
+    let active = true;
     setSaveState("saving");
     const timer = setTimeout(() => {
+      if (restoreLock.current) return;
       storage.saveWorkspace(workspace).then(
-        () => setSaveState("saved"),
-        () => setSaveState("error"),
+        () => {
+          if (!active) return;
+          saved.current = workspace;
+          setSaveState("saved");
+        },
+        () => { if (active) setSaveState("error"); },
       );
     }, 300);
-    return () => clearTimeout(timer);
-  }, [workspace]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [workspace, restoring]);
 
   const update = useCallback<Update>((recipe) => {
+    if (restoreLock.current) return;
     setWorkspace((current) => (current ? produce(current, recipe) : current));
   }, []);
 
-  return <Context.Provider value={{ workspace, loadError, saveState, update }}>{children}</Context.Provider>;
+  const restoreBackup = async () => {
+    if (!workspace || restoreLock.current) return false;
+    restoreLock.current = true;
+    setRestoring(true);
+    try {
+      const replacement = await storage.restoreBackup(workspace);
+      saved.current = replacement;
+      setWorkspace(replacement);
+      setWorkspaceSession((session) => session + 1);
+      setSaveState("saved");
+      return true;
+    } finally {
+      restoreLock.current = false;
+      setRestoring(false);
+    }
+  };
+
+  return <Context.Provider value={{ workspace, loadError, saveState, workspaceSession, update, restoreBackup }}>{children}</Context.Provider>;
 }
 
 export function useWorkspace() {

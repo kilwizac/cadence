@@ -12,4 +12,7 @@ export interface OpsApi {
   revealDataFolder(): Promise<string>;
   exportSop(sop: Sop, area: string, format: "pdf" | "docx"): Promise<boolean>;
   exportManual(workspace: Workspace): Promise<boolean>;
+  backupWorkspace(workspace: Workspace): Promise<boolean>;
+  pickBackup(): Promise<string | null>;
+  restoreBackup(workspace: Workspace): Promise<Workspace>;
 }

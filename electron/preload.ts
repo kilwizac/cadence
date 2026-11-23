@@ -13,6 +13,9 @@ const api: OpsApi = {
   revealDataFolder: () => ipcRenderer.invoke("data:reveal"),
   exportSop: (sop, area, format) => ipcRenderer.invoke("export:sop", sop, area, format),
   exportManual: (workspace) => ipcRenderer.invoke("export:manual", workspace),
+  backupWorkspace: (workspace) => ipcRenderer.invoke("backup:save", workspace),
+  pickBackup: () => ipcRenderer.invoke("backup:pick"),
+  restoreBackup: (workspace) => ipcRenderer.invoke("backup:restore", workspace),
 };
 
 contextBridge.exposeInMainWorld("ops", api);

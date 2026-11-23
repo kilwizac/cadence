@@ -29,4 +29,9 @@ export const storage: OpsApi = window.ops ?? {
   },
   exportSop: () => Promise.reject(new Error("SOP exports are only available in the desktop app.")),
   exportManual: () => Promise.reject(new Error("Manual exports are only available in the desktop app.")),
+  backupWorkspace: () => Promise.reject(new Error("Workspace backups are only available in the desktop app.")),
+  async pickBackup() {
+    return null;
+  },
+  restoreBackup: () => Promise.reject(new Error("Restoring backups is only available in the desktop app.")),
 };

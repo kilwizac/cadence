@@ -16,7 +16,7 @@ import { useWorkspace, type SaveState, type Update } from "./store";
 import { hasDesktopFiles, storage } from "./storage";
 
 export function App() {
-  const { workspace, loadError, saveState, update } = useWorkspace();
+  const { workspace, loadError, saveState, workspaceSession, update } = useWorkspace();
   if (loadError) {
     return (
       <Stack className="fatal" gap="sm" align="flex-start">
@@ -34,7 +34,7 @@ export function App() {
     );
   }
   if (!workspace) return null;
-  return <Shell workspace={workspace} saveState={saveState} update={update} />;
+  return <Shell key={workspaceSession} workspace={workspace} saveState={saveState} update={update} />;
 }
 
 const SAVE_LABEL: Record<SaveState, string> = { saved: "Saved", saving: "Saving…", error: "Couldn't save" };
@@ -191,7 +191,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         }} disabled={Boolean(placement)}>
           Add area
         </Button>
-        {hasDesktopFiles && <WorkspaceMenu workspace={workspace} />}
+        {hasDesktopFiles && <WorkspaceMenu />}
       </header>
 
       {view === "people" && <main className="main"><PeopleView workspace={workspace} update={update} /></main>}

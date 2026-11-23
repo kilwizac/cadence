@@ -1,8 +1,9 @@
-import { app, BrowserWindow, dialog, type SaveDialogOptions } from "electron";
+import { app, BrowserWindow } from "electron";
 import { promises as fs } from "node:fs";
 import { join } from "node:path";
 import sanitizeHtml from "sanitize-html";
 import type { Area, ProcessStatus, Sop, SopStatus, Workspace } from "../src/shared/types";
+import { chooseSavePath, safeFileName } from "./dialogs";
 import { sopDocx } from "./sop-docx";
 
 const sopStatuses: Record<SopStatus, string> = { draft: "Draft", review: "In review", approved: "Approved" };
@@ -23,7 +24,11 @@ const cleanContent = (content: string) => sanitizeHtml(content, {
 
 const sopTitle = (sop: Sop) => sop.title || "Untitled SOP";
 const areaName = (area: Area) => area.name || "Untitled area";
-const sopMeta = (sop: Sop) => [sopStatuses[sop.status] ?? sop.status, `Updated ${date(new Date(sop.updatedAt))}`].join(" · ");
+const sopMeta = (sop: Sop) => [
+  sopStatuses[sop.status] ?? sop.status,
+  sop.revision > 0 ? `Rev ${sop.revision}` : "Not yet approved",
+  `Updated ${date(new Date(sop.updatedAt))}`,
+].join(" · ");
 const attachmentLabel = (sop: Sop) => sop.attachment ? `Attached file: ${sop.attachment.originalName}` : "No file attached.";
 
 function documentHtml(title: string, body: string) {
@@ -120,16 +125,6 @@ async function printPdf(html: string) {
   } finally {
     await fs.rm(directory, { recursive: true, force: true });
   }
-}
-
-export function safeFileName(name: string, fallback: string) {
-  return name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-").trim().replace(/[. ]+$/, "").slice(0, 120) || fallback;
-}
-
-export async function chooseSavePath(owner: BrowserWindow | null, title: string, name: string, extension: string, type: string) {
-  const options: SaveDialogOptions = { title, defaultPath: `${name}.${extension}`, filters: [{ name: type, extensions: [extension] }] };
-  const result = owner ? await dialog.showSaveDialog(owner, options) : await dialog.showSaveDialog(options);
-  return result.canceled ? null : result.filePath || null;
 }
 
 export async function exportSop(owner: BrowserWindow | null, sop: Sop, area: string, format: "pdf" | "docx") {
