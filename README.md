@@ -16,10 +16,13 @@ Use Bun and Node.js 24. On macOS, install the Xcode command line tools to genera
 
 ```sh
 bun run test         # run unit tests
+bun run smoke        # build, exercise the app offscreen, and capture a screenshot
 bun run build        # typecheck and build the renderer, main process, and preload
 bun run package:mac  # build arm64 and x64 DMGs and ZIPs under release/
 bun run icon:mac     # regenerate the committed PNG and ICNS under build/
 ```
+
+The smoke test uses a temporary workspace and prints the screenshot's location. It doesn't open a visible window or touch your Cadence data.
 
 Pushes to `main` run typecheck, unit tests, and build in GitHub Actions. To create downloadable packages, run the **Cadence CI** workflow manually from `main`, then download the **Cadence-macOS** artifact from that run.
 

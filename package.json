@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Map, document and improve business systems on an isometric canvas.",
-  "main": "dist-electron/main.js",
+  "main": "electron/launch.cjs",
   "scripts": {
     "postinstall": "node node_modules/electron/install.js",
     "dev": "bun scripts/dev.ts",
@@ -14,6 +14,7 @@
     "start": "bun run build && electron .",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "smoke": "bun run build && bun scripts/smoke.ts",
     "icon:mac": "bun scripts/generate-icon.ts",
     "package:mac": "bun run build && electron-builder --mac --arm64 --x64 --publish never"
   },

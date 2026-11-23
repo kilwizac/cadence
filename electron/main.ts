@@ -84,7 +84,7 @@ function serveBundle() {
   });
 }
 
-function createWindow() {
+function createWindow(offscreen: boolean) {
   const window = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -93,10 +93,12 @@ function createWindow() {
     title: "Cadence",
     titleBarStyle: "hiddenInset",
     backgroundColor: "#eceef2",
+    show: !offscreen,
     webPreferences: {
       preload: join(app.getAppPath(), "dist-electron/preload.js"),
       contextIsolation: true,
       sandbox: true,
+      offscreen,
     },
   });
 
@@ -105,17 +107,23 @@ function createWindow() {
     return { action: "deny" };
   });
 
-  window.loadURL(process.env.VITE_DEV_SERVER_URL ?? "app://bundle/index.html");
+  return { window, loaded: window.loadURL(process.env.VITE_DEV_SERVER_URL ?? "app://bundle/index.html") };
 }
 
-app.whenReady().then(() => {
+export async function startCadence({ offscreen = false } = {}) {
+  await app.whenReady();
   serveBundle();
-  createWindow();
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
+  if (!offscreen) {
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow(false).loaded.catch(console.error);
+      }
+    });
+    app.on("window-all-closed", () => {
+      if (process.platform !== "darwin") app.quit();
+    });
+  }
+  const { window, loaded } = createWindow(offscreen);
+  await loaded;
+  return window;
+}
