@@ -16,6 +16,7 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
   -webkit-app-region: drag; user-select: none;
 }
 .topbar button, .topbar input, .topbar .search-trigger, .topbar .view-switcher { -webkit-app-region: no-drag; }
+.topbar > button:not(.search-trigger) { flex: none; }
 .workspace-name { flex: 0 1 200px; min-width: 0; }
 .workspace-name input { font-weight: 650; font-size: 14px; }
 .topbar .view-switcher { flex: none; }
@@ -23,7 +24,7 @@ body { background: #eceef2; -webkit-font-smoothing: antialiased; }
 .save-state { min-width: 70px; text-align: right; }
 .search-trigger {
   display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 6px 0 10px; width: 240px;
-  min-width: 105px;
+  min-width: 105px; flex-shrink: 4;
   border: 1px solid var(--border); border-radius: 8px; background: #f6f7f9; color: var(--mantine-color-dimmed); font-size: 13px;
 }
 .search-trigger span { flex: 1; text-align: left; }

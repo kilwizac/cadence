@@ -67,9 +67,28 @@ export function Opportunities({ areas, opportunities, onOpenNotes }: { areas: Ar
             <Text c="dimmed" size="sm">Open issues first, then improvements. Oldest notes come first within each kind.</Text>
           </div>
           <Group gap="sm">
-            <Select label="Area" placeholder="All areas" clearable searchable w={176} value={areaId} onChange={setAreaId}
-              data={areas.map((area) => ({ value: area.id, label: area.name || "Untitled area" }))} />
-            <Select label="Kind" placeholder="All kinds" clearable w={136} value={kind} onChange={setKind} data={OPPORTUNITY_KINDS} />
+            <Select
+              label="Area"
+              placeholder="All areas"
+              clearable
+              clearButtonProps={{ "aria-label": "Clear area filter" }}
+              searchable
+              nothingFoundMessage="No matching areas"
+              w={176}
+              value={areaId}
+              onChange={setAreaId}
+              data={areas.map((area) => ({ value: area.id, label: area.name || "Untitled area" }))}
+            />
+            <Select
+              label="Kind"
+              placeholder="All kinds"
+              clearable
+              clearButtonProps={{ "aria-label": "Clear kind filter" }}
+              w={136}
+              value={kind}
+              onChange={setKind}
+              data={OPPORTUNITY_KINDS}
+            />
           </Group>
         </Group>
         {rows.length ? (
@@ -98,7 +117,7 @@ export function Opportunities({ areas, opportunities, onOpenNotes }: { areas: Ar
                         </Text>
                       </Table.Td>
                       <Table.Td><Badge color={toneOf(NOTE_KINDS, note.kind)}>{labelOf(NOTE_KINDS, note.kind)}</Badge></Table.Td>
-                      <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>{age === null ? "Unknown" : age === 0 ? "Today" : plural(age, "day")}</Table.Td>
+                      <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>{age === null ? "Unknown" : age === 0 ? "Under 1 day" : plural(age, "day")}</Table.Td>
                     </Table.Tr>
                   );
                 })}
