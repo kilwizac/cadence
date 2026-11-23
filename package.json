@@ -13,7 +13,9 @@
     "build": "bun run typecheck && bun run build:renderer && bun run build:electron",
     "start": "bun run build && electron .",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "icon:mac": "bun scripts/generate-icon.ts",
+    "package:mac": "bun run build && electron-builder --mac --arm64 --x64 --publish never"
   },
   "trustedDependencies": [
     "electron",
@@ -47,6 +49,8 @@
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.3.0",
     "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
+    "sharp": "^0.35.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
   }

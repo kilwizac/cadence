@@ -10,6 +10,21 @@ bun run dev      # Vite + Electron with hot reload
 bun run start    # production build, then launch
 ```
 
+## Test, build, and release
+
+Use Bun and Node.js 24. On macOS, install the Xcode command line tools to generate the icon or package the app.
+
+```sh
+bun run test         # run unit tests
+bun run build        # typecheck and build the renderer, main process, and preload
+bun run package:mac  # build arm64 and x64 DMGs and ZIPs under release/
+bun run icon:mac     # regenerate the committed PNG and ICNS under build/
+```
+
+Pushes to `main` run typecheck, unit tests, and build in GitHub Actions. To create downloadable packages, run the **Cadence CI** workflow manually from `main`, then download the **Cadence-macOS** artifact from that run.
+
+Signing and notarization are optional. Set `CSC_LINK` and `CSC_KEY_PASSWORD` to use a Developer ID Application certificate. Also set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID` to notarize the signed app. For GitHub Actions, set these as repository secrets; for a local release, set them in your environment. For a local build without a Developer ID signature, set `CSC_IDENTITY_AUTO_DISCOVERY=false`. macOS may block unsigned or unnotarized downloads, so sign and notarize builds intended for distribution.
+
 ## Using it
 
 - **Add the first area** from the welcome card. Add more with **Add area**, pick its type, then click an open spot to place it. Drag a lot to move it, drag the ground to pan, scroll or pinch to zoom.

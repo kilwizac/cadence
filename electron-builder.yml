@@ -1,0 +1,15 @@
+appId: com.midwestmachining.cadence
+directories:
+  output: release
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - '!node_modules'
+npmRebuild: false
+artifactName: ${productName}-${version}-${arch}.${ext}
+mac:
+  category: public.app-category.business
+  icon: build/icon.icns
+  target:
+    - dmg
+    - zip
