@@ -1,11 +1,12 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Badge, Button, Center, Group, Kbd, Loader, Modal, Paper, SegmentedControl, Stack, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
+import { Badge, Button, Center, Group, Kbd, Loader, Modal, Paper, SegmentedControl, Stack, Text, Title, UnstyledButton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Spotlight, spotlight, type SpotlightActionGroupData } from "@mantine/spotlight";
-import { IconFileText, IconFlag, IconListCheck, IconMapPin, IconNote, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconFileText, IconFlag, IconListCheck, IconMapPin, IconNote, IconPencil, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Workspace } from "../shared/types";
 import { AreaForm } from "./components/AreaForm";
 import { AreaPanel, type PanelTab } from "./components/AreaPanel";
+import { CompanyProfileForm } from "./components/CompanyProfileForm";
 import { FollowUps } from "./components/FollowUps";
 import { SopEditor } from "./components/SopEditor";
 import { WorkspaceMenu } from "./components/WorkspaceMenu";
@@ -34,6 +35,28 @@ export function App() {
     );
   }
   if (!workspace) return null;
+  if (!workspace.companyProfile) {
+    return (
+      <div className="app" key={workspaceSession}>
+        <header className="topbar">
+          <Text fw={700}>Cadence</Text>
+          <span className="spacer" />
+          {hasDesktopFiles && <WorkspaceMenu />}
+        </header>
+        <main className="company-setup">
+          <Paper shadow="sm" radius="lg" p="xl" withBorder>
+            <Stack gap="lg">
+              <Stack gap="xs">
+                <Title order={1} size="h2">Create your company profile</Title>
+                <Text c="dimmed">Start with your company, then map its teams, processes and procedures.</Text>
+              </Stack>
+              <CompanyProfileForm workspace={workspace} update={update} />
+            </Stack>
+          </Paper>
+        </main>
+      </div>
+    );
+  }
   return <Shell key={workspaceSession} workspace={workspace} saveState={saveState} update={update} />;
 }
 
@@ -48,6 +71,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
   const [focusProcessId, setFocusProcessId] = useState<string | null>(null);
   const [placement, setPlacement] = useState<Placement | null>(null);
   const [adding, setAdding] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [openSopId, setOpenSopId] = useState<string | null>(null);
 
@@ -68,14 +92,14 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || view !== "map" || adding || openSop) return;
+      if (event.key !== "Escape" || view !== "map" || adding || editingCompany || openSop) return;
       if (event.composedPath().some((target) => target instanceof HTMLElement && target.getAttribute("role") === "dialog")) return;
       if (placement) setPlacement(null);
       else setSelectedId(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [view, adding, openSop, placement]);
+  }, [view, adding, editingCompany, openSop, placement]);
 
   const select = useCallback((id: string | null, nextTab: PanelTab = "processes", processId: string | null = null) => {
     if (id) setView("map");
@@ -144,16 +168,16 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
   return (
     <div className="app">
       <header className="topbar">
-        <TextInput
-          variant="unstyled"
+        <UnstyledButton
           className="workspace-name"
-          aria-label="Workspace name"
-          value={workspace.name}
-          onChange={(event) => {
-            const name = event.currentTarget.value;
-            update((draft) => void (draft.name = name));
-          }}
-        />
+          aria-label={`Edit company profile${workspace.name.trim() ? ` for ${workspace.name}` : ""}`}
+          aria-haspopup="dialog"
+          title="Edit company profile"
+          onClick={() => setEditingCompany(true)}
+        >
+          <span>{workspace.name.trim() || "Company profile"}</span>
+          <IconPencil size={14} aria-hidden="true" />
+        </UnstyledButton>
         <Text size="xs" c="dimmed" className="topbar-stats">
           {plural(workspace.areas.length, "area")} · {plural(totals.processes, "process", "processes")} · {plural(totals.sops, "SOP")}
         </Text>
@@ -241,9 +265,11 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
           {workspace.areas.length === 0 && !placement && (
             <Paper className="welcome" shadow="lg" radius="lg" p="xl" withBorder>
               <Stack gap="xs">
-                <Title order={2}>Where does your system start?</Title>
-                <Text c="dimmed" style={{ textWrap: "pretty" }}>
-                  Add the first area of the business. You'll build out its processes, SOPs and improvement notes from there, then add the areas it hands work to.
+                <Title order={2}>Add your first area</Title>
+                <Text c="dimmed" style={{ textWrap: "pretty", overflowWrap: "anywhere" }}>
+                  {workspace.name.trim()
+                    ? <>Choose a team or function at <strong>{workspace.name}</strong> to start mapping.</>
+                    : "Choose a team or function to start mapping."}
                 </Text>
                 <AreaForm
                   existing={workspace.areas}
@@ -271,6 +297,10 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
           />
         )}
       </main>
+
+      <Modal opened={editingCompany} onClose={() => setEditingCompany(false)} title="Company profile" radius="lg" size={480}>
+        <CompanyProfileForm workspace={workspace} update={update} onSave={() => setEditingCompany(false)} />
+      </Modal>
 
       <Modal opened={adding} onClose={() => setAdding(false)} title="Add an area" radius="lg" size={480}>
         <Stack gap="md">

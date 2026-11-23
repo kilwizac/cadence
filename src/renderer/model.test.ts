@@ -42,6 +42,20 @@ test.each([
 });
 
 describe("migrate", () => {
+  test("shows company setup for a blank legacy workspace and keeps existing workspaces open", () => {
+    const legacy = { version: 2, name: "My Operations", areas: [], flows: [] };
+    expect(migrate({ ...legacy }).companyProfile).toBeNull();
+
+    const area = newArea("Production", 212, "production", 0, 0);
+    const populated = migrate({ ...legacy, areas: [area] });
+    expect(populated.companyProfile).toEqual({ industry: "", description: "" });
+    expect(populated.areas).toEqual([area]);
+
+    const named = migrate({ ...legacy, name: "Acme Fabrication" });
+    expect(named.name).toBe("Acme Fabrication");
+    expect(named.companyProfile).toEqual({ industry: "", description: "" });
+  });
+
   test("converts legacy written SOP markdown to HTML without changing file SOPs", () => {
     const area = newArea("Production", 212, "production", 0, 0);
     const written = { ...newWrittenSop(), content: "# Check stock\n\n- Wear **gloves**." };

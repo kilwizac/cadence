@@ -64,7 +64,11 @@ export const SOP_TEMPLATE = `<h2>Purpose</h2><p>Why this procedure exists.</p>
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 
-export const emptyWorkspace = (): Workspace => ({ version: 2, name: "My Operations", people: [], areas: [], flows: [] });
+const DEFAULT_WORKSPACE_NAME = "My Operations";
+
+export const emptyWorkspace = (): Workspace => ({
+  version: 2, name: DEFAULT_WORKSPACE_NAME, companyProfile: null, people: [], areas: [], flows: [],
+});
 
 const KIND_KEYWORDS: [AreaKind, RegExp][] = [
   ["shipping", /ship|receiv|logistic|dock|freight/i],
@@ -85,6 +89,14 @@ export function migrate(raw: unknown): Workspace {
     areas: (Area & { processes: (Process & { owner?: string })[] })[];
   };
   workspace.people ??= [];
+  const name = workspace.name.trim();
+  const hasExistingWork = workspace.areas.length > 0 || workspace.people.length > 0 || workspace.flows.length > 0;
+  const hasCustomName = name !== "" && name !== DEFAULT_WORKSPACE_NAME;
+  workspace.companyProfile ??= hasExistingWork || hasCustomName ? { industry: "", description: "" } : null;
+  if (workspace.companyProfile) {
+    workspace.companyProfile.industry ??= "";
+    workspace.companyProfile.description ??= "";
+  }
   const peopleByName = new Map(workspace.people.map((person) => [person.name.trim().toLowerCase(), person]));
   for (const area of workspace.areas) {
     area.kind ??= guessKind(area.name);

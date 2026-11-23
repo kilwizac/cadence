@@ -35,6 +35,7 @@ const area = z.looseObject({
 const workspace = z.looseObject({
   version: z.union([z.literal(1), z.literal(2)]),
   name: text, areas: z.array(area), flows: z.array(z.looseObject({ id, from: id, to: id, label: text })),
+  companyProfile: z.looseObject({ industry: text.nullish(), description: text.nullish() }).nullish(),
   people: z.array(z.looseObject({ id, name: text, role: text, areaIds: texts, email: text.optional() })).nullish(),
 });
 

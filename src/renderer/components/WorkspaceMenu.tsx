@@ -47,12 +47,16 @@ export function WorkspaceMenu() {
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Item leftSection={<IconFileTypePdf size={16} />} onClick={() => run(() => storage.exportManual(workspace), "Operations manual exported.", "Couldn't export the operations manual")}>
-            Export manual
-          </Menu.Item>
-          <Menu.Item leftSection={<IconArchive size={16} />} onClick={() => run(() => storage.backupWorkspace(workspace), "Workspace backup saved.", "Couldn't back up the workspace")}>
-            Backup
-          </Menu.Item>
+          {workspace.companyProfile && (
+            <>
+              <Menu.Item leftSection={<IconFileTypePdf size={16} />} onClick={() => run(() => storage.exportManual(workspace), "Operations manual exported.", "Couldn't export the operations manual")}>
+                Export manual
+              </Menu.Item>
+              <Menu.Item leftSection={<IconArchive size={16} />} onClick={() => run(() => storage.backupWorkspace(workspace), "Workspace backup saved.", "Couldn't back up the workspace")}>
+                Backup
+              </Menu.Item>
+            </>
+          )}
           <Menu.Item leftSection={<IconRestore size={16} />} onClick={chooseBackup}>Restore</Menu.Item>
           <Menu.Divider />
           <Menu.Item leftSection={<IconFolder size={16} />} onClick={showDataFolder}>Show data folder</Menu.Item>

@@ -108,9 +108,15 @@ export interface Flow {
   label: string;
 }
 
+export interface CompanyProfile {
+  industry: string;
+  description: string;
+}
+
 export interface Workspace {
   version: 2;
   name: string;
+  companyProfile: CompanyProfile | null;
   people: Person[];
   areas: Area[];
   flows: Flow[];
