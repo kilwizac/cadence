@@ -99,6 +99,7 @@ function createWindow(offscreen: boolean) {
       contextIsolation: true,
       sandbox: true,
       offscreen,
+      backgroundThrottling: !offscreen,
     },
   });
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { app, type BrowserWindow } from "electron";
+import { app, type BrowserWindow, type NativeImage } from "electron";
 import type { Workspace } from "../src/shared/types";
 
 const [userData, screenshot, areaName, processName, processId] = process.argv.slice(-5);
@@ -68,14 +68,25 @@ async function run() {
       (note) => note.text === noteText && note.processId === processId && note.kind === "improvement" && !note.resolved,
     );
   });
-  await waitFor("the saved note in the process", () => evaluate((text) => {
+  await waitFor("the Notes tab", () => evaluate(() => {
+    const tab = Array.from(document.querySelectorAll<HTMLButtonElement>('aside [role="tab"]'))
+      .find((button) => button.textContent?.startsWith("Notes"));
+    if (!tab) return false;
+    tab.click();
+    return true;
+  }));
+  await waitFor("the saved note in the area", () => evaluate((text) => {
     const note = Array.from(document.querySelectorAll("aside p")).find((item) => item.textContent === text);
     if (!note?.checkVisibility()) return false;
     note.scrollIntoView({ block: "nearest" });
     return true;
   }, noteText));
 
-  const image = await window.capturePage(undefined, { stayHidden: true });
+  await evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  const image = await new Promise<NativeImage>((resolve) => {
+    contents.once("paint", (_event, _dirty, frame) => resolve(frame));
+    contents.invalidate();
+  });
   assert(!image.isEmpty(), "The offscreen capture is empty");
   await writeFile(screenshot, image.toPNG());
 }
