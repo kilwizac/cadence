@@ -1,0 +1,52 @@
+{
+  "name": "cadence",
+  "productName": "Cadence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Map, document and improve business systems on an isometric canvas.",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
+    "dev": "bun scripts/dev.ts",
+    "build:electron": "bun build electron/main.ts electron/preload.ts --outdir dist-electron --target node --format cjs --external electron",
+    "build:renderer": "vite build",
+    "build": "bun run typecheck && bun run build:renderer && bun run build:electron",
+    "start": "bun run build && electron .",
+    "typecheck": "tsc --noEmit"
+  },
+  "trustedDependencies": [
+    "electron",
+    "esbuild"
+  ],
+  "dependencies": {
+    "@mantine/core": "^9.8.2",
+    "@mantine/dropzone": "^9.8.2",
+    "@mantine/hooks": "^9.8.2",
+    "@mantine/modals": "^9.8.2",
+    "@mantine/notifications": "^9.8.2",
+    "@mantine/spotlight": "^9.8.2",
+    "@mantine/tiptap": "^9.8.2",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "@tabler/icons-react": "^3.52.0",
+    "@tiptap/extension-link": "^3.35.0",
+    "@tiptap/pm": "^3.35.0",
+    "@tiptap/react": "^3.35.0",
+    "@tiptap/starter-kit": "^3.35.0",
+    "immer": "^11.2.10",
+    "marked": "^18.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "electron": "^45.4.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}

@@ -1,0 +1,16 @@
+import { contextBridge, ipcRenderer, webUtils } from "electron";
+import type { OpsApi } from "../src/shared/api";
+
+const api: OpsApi = {
+  loadWorkspace: () => ipcRenderer.invoke("workspace:load"),
+  saveWorkspace: (workspace) => ipcRenderer.invoke("workspace:save", workspace),
+  pickAttachment: () => ipcRenderer.invoke("attachment:pick"),
+  importAttachment: (sourcePath) => ipcRenderer.invoke("attachment:import", sourcePath),
+  pathForFile: (file) => webUtils.getPathForFile(file),
+  openAttachment: (storedName) => ipcRenderer.invoke("attachment:open", storedName),
+  revealAttachment: (storedName) => ipcRenderer.invoke("attachment:reveal", storedName),
+  deleteAttachment: (storedName) => ipcRenderer.invoke("attachment:delete", storedName),
+  revealDataFolder: () => ipcRenderer.invoke("data:reveal"),
+};
+
+contextBridge.exposeInMainWorld("ops", api);
