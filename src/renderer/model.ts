@@ -45,6 +45,8 @@ export const SOP_STATUSES: { value: SopStatus; label: string; tone: Tone }[] = [
   { value: "approved", label: "Approved", tone: "green" },
 ];
 
+export const DEFAULT_SOP_REVIEW_MONTHS = 12;
+
 export const NOTE_KINDS: { value: NoteKind; label: string; tone: Tone }[] = [
   { value: "improvement", label: "Improvement", tone: "green" },
   { value: "revisit", label: "Come back to", tone: "orange" },
@@ -80,8 +82,10 @@ export function migrate(raw: unknown): Workspace {
   const workspace = raw as Omit<Workspace, "version"> & { version: number; areas: (Omit<Area, "kind"> & { kind?: AreaKind })[] };
   for (const area of workspace.areas) {
     area.kind ??= guessKind(area.name);
-    if (workspace.version < 2) {
-      for (const sop of area.sops) if (sop.kind === "written") sop.content = marked.parse(sop.content, { async: false }) as string;
+    for (const sop of area.sops) {
+      if (workspace.version < 2 && sop.kind === "written") sop.content = marked.parse(sop.content, { async: false }) as string;
+      sop.reviewEveryMonths ??= DEFAULT_SOP_REVIEW_MONTHS;
+      if (sop.status === "approved") sop.lastReviewedAt ??= sop.updatedAt;
     }
   }
   workspace.version = 2;
@@ -122,6 +126,7 @@ export const newWrittenSop = (): Sop => ({
   kind: "written",
   content: SOP_TEMPLATE,
   updatedAt: now(),
+  reviewEveryMonths: DEFAULT_SOP_REVIEW_MONTHS,
 });
 
 export const newFileSop = (attachment: Attachment): Sop => ({
@@ -132,6 +137,7 @@ export const newFileSop = (attachment: Attachment): Sop => ({
   content: "",
   attachment,
   updatedAt: now(),
+  reviewEveryMonths: DEFAULT_SOP_REVIEW_MONTHS,
 });
 
 export const newNote = (kind: NoteKind, text: string, processId?: string) => ({

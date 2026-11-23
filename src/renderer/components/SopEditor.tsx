@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { ActionIcon, Button, Group, Modal, Paper, Select, Stack, Text, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, Modal, NumberInput, Paper, Select, Stack, Text, TextInput, Tooltip } from "@mantine/core";
 import { RichTextEditor } from "@mantine/tiptap";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { IconExternalLink, IconFolder, IconPaperclip, IconTrash } from "@tabler/icons-react";
 import type { Area, Sop, SopStatus } from "../../shared/types";
-import { SOP_STATUSES, findArea, shortDate, touch } from "../model";
+import { DEFAULT_SOP_REVIEW_MONTHS, SOP_STATUSES, findArea, shortDate, touch } from "../model";
 import type { Update } from "../store";
 import { storage } from "../storage";
 import { confirmDelete } from "./ui";
@@ -15,13 +15,14 @@ const formatSize = (bytes: number) =>
 
 export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop; update: Update; onClose: () => void }) {
   const [openError, setOpenError] = useState("");
+  const [reviewMonths, setReviewMonths] = useState<number | string>(sop.reviewEveryMonths ?? DEFAULT_SOP_REVIEW_MONTHS);
 
   const edit = (recipe: (draft: Sop) => void) =>
     update((draft) => {
       const target = findArea(draft, area.id).sops.find((s) => s.id === sop.id);
       if (!target) return;
-      recipe(target);
       touch(target);
+      recipe(target);
     });
 
   const editor = useEditor({
@@ -73,7 +74,10 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
             w={130}
             data={SOP_STATUSES}
             value={sop.status}
-            onChange={(value) => value && edit((s) => void (s.status = value as SopStatus))}
+            onChange={(value) => value && edit((s) => {
+              if (value === "approved" && s.status !== "approved") s.lastReviewedAt = s.updatedAt;
+              s.status = value as SopStatus;
+            })}
           />
           <Tooltip label="Delete SOP">
             <ActionIcon variant="subtle" color="red" size="lg" aria-label="Delete SOP" onClick={remove}>
@@ -88,6 +92,34 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
           {area.name} · Updated {shortDate(sop.updatedAt)}
           {usedBy.length > 0 && ` · Used in ${usedBy.map((p) => p.name).join(", ")}`}
         </Text>
+        <Group align="flex-end" gap="sm">
+          <NumberInput
+            label="Review interval (months)"
+            size="sm"
+            w={160}
+            value={reviewMonths}
+            min={1}
+            max={120}
+            allowNegative={false}
+            allowDecimal={false}
+            clampBehavior="strict"
+            onChange={(value) => {
+              setReviewMonths(value);
+              if (typeof value === "number") edit((s) => void (s.reviewEveryMonths = value));
+            }}
+            onBlur={() => setReviewMonths(sop.reviewEveryMonths ?? DEFAULT_SOP_REVIEW_MONTHS)}
+          />
+          {sop.status === "approved" && (
+            <Button variant="default" onClick={() => edit((s) => void (s.lastReviewedAt = s.updatedAt))}>
+              Record review
+            </Button>
+          )}
+          {sop.lastReviewedAt && (
+            <Text c="dimmed" size="xs" py={8}>
+              Last reviewed {new Date(sop.lastReviewedAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+            </Text>
+          )}
+        </Group>
 
         {sop.kind === "written" ? (
           <RichTextEditor editor={editor} className="sop-editor">

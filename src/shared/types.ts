@@ -42,6 +42,8 @@ export interface Sop {
   content: string;
   attachment?: Attachment;
   updatedAt: string;
+  reviewEveryMonths?: number;
+  lastReviewedAt?: string;
 }
 
 export interface Note {
