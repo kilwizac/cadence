@@ -23,6 +23,7 @@
     "esbuild"
   ],
   "dependencies": {
+    "@mantine/charts": "^9.8.2",
     "@mantine/core": "^9.8.2",
     "@mantine/dropzone": "^9.8.2",
     "@mantine/hooks": "^9.8.2",
@@ -43,6 +44,7 @@
     "marked": "^18.2.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "recharts": "^3",
     "sanitize-html": "^2.18.2",
     "three": "^0.187.0"
   },

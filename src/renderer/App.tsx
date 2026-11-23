@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Badge, Button, Group, Kbd, Modal, Paper, SegmentedControl, Stack, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, Button, Center, Group, Kbd, Loader, Modal, Paper, SegmentedControl, Stack, Text, TextInput, Title, UnstyledButton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { Spotlight, spotlight, type SpotlightActionGroupData } from "@mantine/spotlight";
 import { IconFileText, IconFlag, IconListCheck, IconMapPin, IconNote, IconPlus, IconSearch } from "@tabler/icons-react";
@@ -38,7 +38,8 @@ export function App() {
 }
 
 const SAVE_LABEL: Record<SaveState, string> = { saved: "Saved", saving: "Saving…", error: "Couldn't save" };
-type View = "map" | "people";
+const Insights = lazy(() => import("./insights/Insights"));
+type View = "map" | "people" | "insights";
 
 function Shell({ workspace, saveState, update }: { workspace: Workspace; saveState: SaveState; update: Update }) {
   const [view, setView] = useState<View>("map");
@@ -83,6 +84,11 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
     if (id && (id !== selectedId || nextTab !== "processes" || processId)) setTab(nextTab);
   }, [selectedId]);
 
+  const openAreaSop = useCallback((areaId: string, sopId: string) => {
+    select(areaId, "sops");
+    setOpenSopId(sopId);
+  }, [select]);
+
   const createArea = (name: string, hue: number, kind: Placement["kind"], x: number, y: number) => {
     const area = newArea(name, hue, kind, x, y);
     update((draft) => void draft.areas.push(area));
@@ -112,10 +118,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         label: sop.title || "Untitled SOP",
         description: `${area.name} · ${sop.kind === "file" ? sop.attachment?.originalName : "Written SOP"}`,
         leftSection: <IconFileText size={18} />,
-        onClick: () => {
-          select(area.id, "sops");
-          setOpenSopId(sop.id);
-        },
+        onClick: () => openAreaSop(area.id, sop.id),
       })),
     );
     const notes = workspace.areas.flatMap((area) =>
@@ -135,7 +138,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
       { group: "SOPs", actions: sops },
       { group: "Open notes", actions: notes },
     ].filter((group) => group.actions.length > 0);
-  }, [workspace, select]);
+  }, [workspace, select, openAreaSop]);
 
   return (
     <div className="app">
@@ -157,7 +160,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
           aria-label="Workspace view"
           size="xs"
           className="view-switcher"
-          data={[{ value: "map", label: "Map" }, { value: "people", label: "People" }]}
+          data={[{ value: "map", label: "Map" }, { value: "people", label: "People" }, { value: "insights", label: "Insights" }]}
           value={view}
           onChange={(value) => setView(value as View)}
         />
@@ -192,6 +195,13 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
       </header>
 
       {view === "people" && <main className="main"><PeopleView workspace={workspace} update={update} /></main>}
+      {view === "insights" && (
+        <main className="main">
+          <Suspense fallback={<Center style={{ flex: 1 }}><Loader aria-label="Loading insights" /></Center>}>
+            <Insights workspace={workspace} onOpenSop={openAreaSop} onOpenNotes={(areaId) => select(areaId, "notes")} />
+          </Suspense>
+        </main>
+      )}
       <main className="main" style={view !== "map" ? { display: "none" } : undefined}>
         <div className="stage">
           <MapScene
