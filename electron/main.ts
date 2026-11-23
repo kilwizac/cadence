@@ -3,8 +3,9 @@ import { promises as fs } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
-import type { Attachment, Workspace } from "../src/shared/types";
+import type { Attachment, Sop, Workspace } from "../src/shared/types";
 import { resolveBundlePath } from "./bundle-path";
+import { exportManual, exportSop } from "./export";
 
 app.setName("Cadence");
 
@@ -69,6 +70,10 @@ ipcMain.handle("attachment:open", (_event, storedName: string) => shell.openPath
 ipcMain.handle("attachment:reveal", (_event, storedName: string) => shell.showItemInFolder(attachmentPath(storedName)));
 ipcMain.handle("attachment:delete", (_event, storedName: string) => fs.rm(attachmentPath(storedName), { force: true }));
 ipcMain.handle("data:reveal", () => shell.openPath(app.getPath("userData")));
+ipcMain.handle("export:sop", (event, sop: Sop, area: string, format: "pdf" | "docx") =>
+  exportSop(BrowserWindow.fromWebContents(event.sender), sop, area, format),
+);
+ipcMain.handle("export:manual", (event, workspace: Workspace) => exportManual(BrowserWindow.fromWebContents(event.sender), workspace));
 
 function serveBundle() {
   const root = join(app.getAppPath(), "dist");

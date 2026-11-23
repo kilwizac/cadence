@@ -1,4 +1,4 @@
-import type { Attachment, Workspace } from "./types";
+import type { Attachment, Sop, Workspace } from "./types";
 
 export interface OpsApi {
   loadWorkspace(): Promise<unknown>;
@@ -10,4 +10,6 @@ export interface OpsApi {
   revealAttachment(storedName: string): Promise<void>;
   deleteAttachment(storedName: string): Promise<void>;
   revealDataFolder(): Promise<string>;
+  exportSop(sop: Sop, area: string, format: "pdf" | "docx"): Promise<boolean>;
+  exportManual(workspace: Workspace): Promise<boolean>;
 }

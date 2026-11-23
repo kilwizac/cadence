@@ -11,6 +11,8 @@ const api: OpsApi = {
   revealAttachment: (storedName) => ipcRenderer.invoke("attachment:reveal", storedName),
   deleteAttachment: (storedName) => ipcRenderer.invoke("attachment:delete", storedName),
   revealDataFolder: () => ipcRenderer.invoke("data:reveal"),
+  exportSop: (sop, area, format) => ipcRenderer.invoke("export:sop", sop, area, format),
+  exportManual: (workspace) => ipcRenderer.invoke("export:manual", workspace),
 };
 
 contextBridge.exposeInMainWorld("ops", api);

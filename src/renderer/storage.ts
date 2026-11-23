@@ -27,4 +27,6 @@ export const storage: OpsApi = window.ops ?? {
   async revealDataFolder() {
     return "";
   },
+  exportSop: () => Promise.reject(new Error("SOP exports are only available in the desktop app.")),
+  exportManual: () => Promise.reject(new Error("Manual exports are only available in the desktop app.")),
 };

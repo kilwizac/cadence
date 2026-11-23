@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { ActionIcon, Button, Group, Modal, NumberInput, Paper, Select, Stack, Text, TextInput, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Group, Menu, Modal, NumberInput, Paper, Select, Stack, Text, TextInput, Tooltip } from "@mantine/core";
 import { RichTextEditor } from "@mantine/tiptap";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { IconExternalLink, IconFolder, IconPaperclip, IconTrash } from "@tabler/icons-react";
+import { IconChevronDown, IconExternalLink, IconFileTypeDocx, IconFileTypePdf, IconFolder, IconPaperclip, IconTrash } from "@tabler/icons-react";
 import type { Area, Sop, SopStatus } from "../../shared/types";
 import { DEFAULT_SOP_REVIEW_MONTHS, SOP_STATUSES, findArea, shortDate, touch } from "../model";
 import type { Update } from "../store";
-import { storage } from "../storage";
-import { confirmDelete } from "./ui";
+import { hasDesktopFiles, storage } from "../storage";
+import { confirmDelete, runFileAction } from "./ui";
 
 const formatSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -16,6 +16,7 @@ const formatSize = (bytes: number) =>
 export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop; update: Update; onClose: () => void }) {
   const [openError, setOpenError] = useState("");
   const [reviewMonths, setReviewMonths] = useState<number | string>(sop.reviewEveryMonths ?? DEFAULT_SOP_REVIEW_MONTHS);
+  const [exporting, setExporting] = useState(false);
 
   const edit = (recipe: (draft: Sop) => void) =>
     update((draft) => {
@@ -51,6 +52,12 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
     setOpenError(await storage.openAttachment(sop.attachment.storedName));
   };
 
+  const exportSop = async (format: "pdf" | "docx") => {
+    setExporting(true);
+    await runFileAction(() => storage.exportSop(sop, area.name, format), "SOP exported.", "Couldn't export the SOP");
+    setExporting(false);
+  };
+
   const usedBy = area.processes.filter((process) => process.sopIds.includes(sop.id));
 
   return (
@@ -79,6 +86,17 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
               s.status = value as SopStatus;
             })}
           />
+          {hasDesktopFiles && (
+            <Menu position="bottom-end" withinPortal={false}>
+              <Menu.Target>
+                <Button variant="default" rightSection={<IconChevronDown size={14} />} disabled={exporting}>Export</Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item leftSection={<IconFileTypePdf size={16} />} onClick={() => exportSop("pdf")}>Export as PDF</Menu.Item>
+                <Menu.Item leftSection={<IconFileTypeDocx size={16} />} onClick={() => exportSop("docx")}>Export as Word (.docx)</Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          )}
           <Tooltip label="Delete SOP">
             <ActionIcon variant="subtle" color="red" size="lg" aria-label="Delete SOP" onClick={remove}>
               <IconTrash size={18} />

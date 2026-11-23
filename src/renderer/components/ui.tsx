@@ -1,5 +1,6 @@
 import { CheckIcon, ColorSwatch, Group, Stack, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { hueColor } from "../model";
 
 export function HuePicker({ value, hues, onChange }: { value: number; hues: number[]; onChange: (hue: number) => void }) {
@@ -44,4 +45,12 @@ export function confirmDelete(title: string, body: string, onConfirm: () => void
     confirmProps: { color: "red" },
     onConfirm,
   });
+}
+
+export async function runFileAction(action: () => Promise<boolean>, success: string, failure: string) {
+  try {
+    if (await action()) notifications.show({ color: "green", message: success });
+  } catch (error) {
+    notifications.show({ color: "red", title: failure, message: error instanceof Error ? error.message : String(error) });
+  }
 }

@@ -8,6 +8,7 @@ import { AreaForm } from "./components/AreaForm";
 import { AreaPanel, type PanelTab } from "./components/AreaPanel";
 import { FollowUps } from "./components/FollowUps";
 import { SopEditor } from "./components/SopEditor";
+import { WorkspaceMenu } from "./components/WorkspaceMenu";
 import { MapScene, type Placement } from "./map/MapScene";
 import { FOOTPRINT, GRID_SIZE, findArea, newArea, plural } from "./model";
 import { PeopleView } from "./people/PeopleView";
@@ -187,6 +188,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         }} disabled={Boolean(placement)}>
           Add area
         </Button>
+        {hasDesktopFiles && <WorkspaceMenu workspace={workspace} />}
       </header>
 
       {view === "people" && <main className="main"><PeopleView workspace={workspace} update={update} /></main>}
