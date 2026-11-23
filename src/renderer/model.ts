@@ -1,5 +1,5 @@
 import { marked } from "marked";
-import type { Area, AreaKind, Attachment, NoteKind, Process, ProcessStatus, Sop, SopStatus, Workspace } from "../shared/types";
+import type { Area, AreaKind, Attachment, NoteKind, Process, ProcessStatus, Sop, SopStatus, Step, Workspace } from "../shared/types";
 
 export const GRID_SIZE = 18;
 export const FOOTPRINT = 2;
@@ -82,6 +82,15 @@ export function migrate(raw: unknown): Workspace {
   const workspace = raw as Omit<Workspace, "version"> & { version: number; areas: (Omit<Area, "kind"> & { kind?: AreaKind })[] };
   for (const area of workspace.areas) {
     area.kind ??= guessKind(area.name);
+    for (const process of area.processes) {
+      for (const step of process.steps) {
+        step.type ??= "action";
+        step.role ??= "";
+        step.system ??= "";
+        step.durationMinutes ??= 0;
+        step.branches ??= [];
+      }
+    }
     for (const sop of area.sops) {
       if (workspace.version < 2 && sop.kind === "written") sop.content = marked.parse(sop.content, { async: false }) as string;
       sop.reviewEveryMonths ??= DEFAULT_SOP_REVIEW_MONTHS;
@@ -117,7 +126,7 @@ export const newProcess = (name: string): Process => ({
   createdAt: now(),
 });
 
-export const newStep = (text: string) => ({ id: uid(), text });
+export const newStep = (text: string): Step => ({ id: uid(), text, type: "action", role: "", system: "", durationMinutes: 0, branches: [] });
 
 export const newWrittenSop = (): Sop => ({
   id: uid(),

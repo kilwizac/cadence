@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Accordion, ActionIcon, Badge, Button, Chip, Group, Select, Stack, Text, TextInput, Textarea, Tooltip } from "@mantine/core";
+import { Accordion, ActionIcon, Badge, Button, Chip, Group, Paper, Select, Stack, Text, TextInput, Textarea, Tooltip } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconX } from "@tabler/icons-react";
 import type { Area, NoteKind, Process, ProcessStatus } from "../../shared/types";
 import { NOTE_KINDS, PROCESS_STATUSES, findArea, labelOf, newNote, newProcess, newStep, plural, toneOf } from "../model";
 import type { Update } from "../store";
+import { StepFields } from "./process/StepFields";
 import { EmptyState, confirmDelete } from "./ui";
 
 export function ProcessesTab({ area, update, initialOpenId }: { area: Area; update: Update; initialOpenId: string | null }) {
@@ -60,6 +61,8 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
     });
 
   const notes = area.notes.filter((note) => note.processId === process.id && !note.resolved);
+  const duration = process.steps.reduce((sum, step) => sum + (step.durationMinutes ?? 0), 0);
+  const handoffs = process.steps.filter((step) => step.type === "handoff").length;
 
   const move = (offset: number) =>
     update((draft) => {
@@ -112,6 +115,9 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
               {notes.length > 0 && ` · ${plural(notes.length, "open note")}`}
               {process.owner && ` · ${process.owner}`}
             </Text>
+            <Text size="xs" c="dimmed">
+              {duration} min estimated · {plural(handoffs, "handoff")}
+            </Text>
           </Stack>
           <Badge color={toneOf(PROCESS_STATUSES, process.status)} style={{ flex: "none" }}>
             {labelOf(PROCESS_STATUSES, process.status)}
@@ -144,34 +150,39 @@ function ProcessItem({ area, process, index, update }: { area: Area; process: Pr
               Steps
             </Text>
             {process.steps.map((step, stepIndex) => (
-              <Group key={step.id} gap={4} wrap="nowrap">
-                <span className="step-number">{stepIndex + 1}</span>
-                <TextInput
-                  style={{ flex: 1 }}
-                  size="xs"
-                  aria-label={`Step ${stepIndex + 1}`}
-                  value={step.text}
-                  onChange={(event) => {
-                    const text = event.currentTarget.value;
-                    edit((p) => void (p.steps[stepIndex].text = text));
-                  }}
-                />
-                <ActionIcon variant="subtle" color="gray" aria-label="Move step up" disabled={stepIndex === 0} onClick={() => moveStep(stepIndex, stepIndex - 1)}>
-                  <IconArrowUp size={15} />
-                </ActionIcon>
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  aria-label="Move step down"
-                  disabled={stepIndex === process.steps.length - 1}
-                  onClick={() => moveStep(stepIndex, stepIndex + 1)}
-                >
-                  <IconArrowDown size={15} />
-                </ActionIcon>
-                <ActionIcon variant="subtle" color="gray" aria-label="Remove step" onClick={() => edit((p) => void p.steps.splice(stepIndex, 1))}>
-                  <IconX size={15} />
-                </ActionIcon>
-              </Group>
+              <Paper key={step.id} withBorder p="xs">
+                <Stack gap={6}>
+                  <Group gap={4} wrap="nowrap">
+                    <span className="step-number">{stepIndex + 1}</span>
+                    <TextInput
+                      style={{ flex: 1 }}
+                      size="xs"
+                      aria-label={`Step ${stepIndex + 1}`}
+                      value={step.text}
+                      onChange={(event) => {
+                        const text = event.currentTarget.value;
+                        edit((p) => void (p.steps[stepIndex].text = text));
+                      }}
+                    />
+                    <ActionIcon variant="subtle" color="gray" aria-label="Move step up" disabled={stepIndex === 0} onClick={() => moveStep(stepIndex, stepIndex - 1)}>
+                      <IconArrowUp size={15} />
+                    </ActionIcon>
+                    <ActionIcon
+                      variant="subtle"
+                      color="gray"
+                      aria-label="Move step down"
+                      disabled={stepIndex === process.steps.length - 1}
+                      onClick={() => moveStep(stepIndex, stepIndex + 1)}
+                    >
+                      <IconArrowDown size={15} />
+                    </ActionIcon>
+                    <ActionIcon variant="subtle" color="gray" aria-label="Remove step" onClick={() => edit((p) => void p.steps.splice(stepIndex, 1))}>
+                      <IconX size={15} />
+                    </ActionIcon>
+                  </Group>
+                  <StepFields step={step} onChange={(changes) => edit((p) => void Object.assign(p.steps[stepIndex], changes))} />
+                </Stack>
+              </Paper>
             ))}
             <form onSubmit={addStep}>
               <TextInput size="xs" value={stepText} onChange={(event) => setStepText(event.currentTarget.value)} placeholder="Add a step and press Return" aria-label="New step" />

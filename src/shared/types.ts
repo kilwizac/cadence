@@ -1,6 +1,7 @@
 export type NoteKind = "improvement" | "revisit" | "issue" | "question";
 export type ProcessStatus = "unmapped" | "mapped" | "documented" | "optimized";
 export type SopStatus = "draft" | "review" | "approved";
+export type StepType = "action" | "decision" | "handoff" | "wait";
 export type AreaKind =
   | "shipping"
   | "inventory"
@@ -15,6 +16,17 @@ export type AreaKind =
 export interface Step {
   id: string;
   text: string;
+  type?: StepType;
+  role?: string;
+  system?: string;
+  durationMinutes?: number;
+  branches?: StepBranch[];
+}
+
+export interface StepBranch {
+  id: string;
+  label: string;
+  targetStepId: string;
 }
 
 export interface Process {
