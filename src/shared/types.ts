@@ -58,6 +58,11 @@ export interface Attachment {
   size: number;
 }
 
+export interface SopTrainingRecord {
+  revision: number;
+  trainedAt: string;
+}
+
 export interface Sop {
   id: string;
   title: string;
@@ -65,6 +70,8 @@ export interface Sop {
   kind: "written" | "file";
   content: string;
   attachment?: Attachment;
+  revision: number;
+  training: Partial<Record<string, SopTrainingRecord>>;
   updatedAt: string;
   reviewEveryMonths?: number;
   lastReviewedAt?: string;

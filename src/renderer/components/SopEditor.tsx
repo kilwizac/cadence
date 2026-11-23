@@ -4,8 +4,9 @@ import { RichTextEditor } from "@mantine/tiptap";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { IconChevronDown, IconExternalLink, IconFileTypeDocx, IconFileTypePdf, IconFolder, IconPaperclip, IconTrash } from "@tabler/icons-react";
-import type { Area, Sop, SopStatus } from "../../shared/types";
-import { DEFAULT_SOP_REVIEW_MONTHS, SOP_STATUSES, findArea, shortDate, touch } from "../model";
+import type { Area, Person, Sop, SopStatus } from "../../shared/types";
+import { DEFAULT_SOP_REVIEW_MONTHS, SOP_STATUSES, findArea, setSopStatus, shortDate, touch } from "../model";
+import { SopTraining } from "../people/SopTraining";
 import type { Update } from "../store";
 import { hasDesktopFiles, storage } from "../storage";
 import { confirmDelete, runFileAction } from "./ui";
@@ -13,7 +14,7 @@ import { confirmDelete, runFileAction } from "./ui";
 const formatSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
-export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop; update: Update; onClose: () => void }) {
+export function SopEditor({ area, sop, people, update, onClose }: { area: Area; sop: Sop; people: Person[]; update: Update; onClose: () => void }) {
   const [openError, setOpenError] = useState("");
   const [reviewMonths, setReviewMonths] = useState<number | string>(sop.reviewEveryMonths ?? DEFAULT_SOP_REVIEW_MONTHS);
   const [exporting, setExporting] = useState(false);
@@ -81,10 +82,7 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
             w={130}
             data={SOP_STATUSES}
             value={sop.status}
-            onChange={(value) => value && edit((s) => {
-              if (value === "approved" && s.status !== "approved") s.lastReviewedAt = s.updatedAt;
-              s.status = value as SopStatus;
-            })}
+            onChange={(value) => value && edit((s) => setSopStatus(s, value as SopStatus))}
           />
           {hasDesktopFiles && (
             <Menu position="bottom-end" withinPortal={false}>
@@ -107,7 +105,7 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
           </Button>
         </Group>
         <Text size="xs" c="dimmed" mt={-8}>
-          {area.name} · Updated {shortDate(sop.updatedAt)}
+          {area.name} · {sop.revision > 0 ? `Rev ${sop.revision}` : "Not yet approved"} · Updated {shortDate(sop.updatedAt)}
           {usedBy.length > 0 && ` · Used in ${usedBy.map((p) => p.name).join(", ")}`}
         </Text>
         <Group align="flex-end" gap="sm">
@@ -138,6 +136,7 @@ export function SopEditor({ area, sop, update, onClose }: { area: Area; sop: Sop
             </Text>
           )}
         </Group>
+        <SopTraining areaId={area.id} sop={sop} people={people} update={update} />
 
         {sop.kind === "written" ? (
           <RichTextEditor editor={editor} className="sop-editor">

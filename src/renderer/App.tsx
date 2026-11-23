@@ -277,7 +277,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
         </Stack>
       </Modal>
 
-      {view === "map" && selected && openSop && <SopEditor key={openSop.id} area={selected} sop={openSop} update={update} onClose={() => setOpenSopId(null)} />}
+      {view === "map" && selected && openSop && <SopEditor key={openSop.id} area={selected} sop={openSop} people={workspace.people} update={update} onClose={() => setOpenSopId(null)} />}
 
       <Spotlight
         actions={searchActions}

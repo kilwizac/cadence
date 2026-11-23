@@ -116,6 +116,8 @@ export function migrate(raw: unknown): Workspace {
       if (workspace.version < 2 && sop.kind === "written") sop.content = marked.parse(sop.content, { async: false }) as string;
       sop.reviewEveryMonths ??= DEFAULT_SOP_REVIEW_MONTHS;
       if (sop.status === "approved") sop.lastReviewedAt ??= sop.updatedAt;
+      sop.revision ??= sop.status === "approved" ? 1 : 0;
+      sop.training ??= {};
     }
   }
   workspace.version = 2;
@@ -156,6 +158,8 @@ export const newWrittenSop = (): Sop => ({
   status: "draft",
   kind: "written",
   content: SOP_TEMPLATE,
+  revision: 0,
+  training: {},
   updatedAt: now(),
   reviewEveryMonths: DEFAULT_SOP_REVIEW_MONTHS,
 });
@@ -167,6 +171,8 @@ export const newFileSop = (attachment: Attachment): Sop => ({
   kind: "file",
   content: "",
   attachment,
+  revision: 0,
+  training: {},
   updatedAt: now(),
   reviewEveryMonths: DEFAULT_SOP_REVIEW_MONTHS,
 });
@@ -191,6 +197,14 @@ export function findArea(workspace: Workspace, id: string): Area {
 export const touch = (sop: Sop) => {
   sop.updatedAt = now();
 };
+
+export function setSopStatus(sop: Sop, status: SopStatus) {
+  if (status === "approved" && sop.status !== "approved") {
+    sop.revision += 1;
+    sop.lastReviewedAt = sop.updatedAt;
+  }
+  sop.status = status;
+}
 
 export const openNotes = (area: Area) => area.notes.filter((n) => !n.resolved);
 

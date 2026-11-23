@@ -4,6 +4,7 @@ import { IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import type { Area, Person, Workspace } from "../../shared/types";
 import { EmptyState, confirmDelete } from "../components/ui";
 import type { Update } from "../store";
+import { TrainingMatrix } from "./TrainingMatrix";
 import { RACI_ROLES, newPerson } from "./model";
 
 export function PeopleView({ workspace, update }: { workspace: Workspace; update: Update }) {
@@ -11,7 +12,7 @@ export function PeopleView({ workspace, update }: { workspace: Workspace; update
   const people = [...workspace.people].sort((a, b) => a.name.localeCompare(b.name));
 
   const remove = (person: Person) =>
-    confirmDelete(`Delete ${person.name}?`, "This person will be removed from process ownership and RACI assignments.", () =>
+    confirmDelete(`Delete ${person.name}?`, "Their process ownership, RACI assignments and SOP training records will be removed.", () =>
       update((draft) => {
         draft.people = draft.people.filter(({ id }) => id !== person.id);
         for (const area of draft.areas) {
@@ -19,6 +20,7 @@ export function PeopleView({ workspace, update }: { workspace: Workspace; update
             if (process.ownerId === person.id) process.ownerId = null;
             for (const { value } of RACI_ROLES) process.raci[value] = process.raci[value].filter((id) => id !== person.id);
           }
+          for (const sop of area.sops) delete sop.training[person.id];
         }
       }),
     );
@@ -83,6 +85,7 @@ export function PeopleView({ workspace, update }: { workspace: Workspace; update
             </Table.ScrollContainer>
           )}
         </Paper>
+        <TrainingMatrix people={people} areas={workspace.areas} />
       </Stack>
       {editing && (
         <PersonForm

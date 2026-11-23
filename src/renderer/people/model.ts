@@ -1,4 +1,4 @@
-import type { Person, Raci, RaciRole } from "../../shared/types";
+import type { Person, Raci, RaciRole, Sop, SopTrainingRecord } from "../../shared/types";
 
 export const RACI_ROLES: { value: RaciRole; label: string }[] = [
   { value: "responsible", label: "Responsible" },
@@ -15,3 +15,12 @@ export const newPerson = (name: string, areaIds: string[] = []): Person => ({
   role: "",
   areaIds,
 });
+
+export const trainingStatus = (revision: number, record?: SopTrainingRecord) =>
+  !record ? "missing" : record.revision === revision ? "current" : "outdated";
+
+export function recordTraining(sop: Sop, personId: string, trainedAt: string) {
+  if (sop.status === "approved" && sop.revision > 0) {
+    sop.training[personId] = { revision: sop.revision, trainedAt };
+  }
+}
