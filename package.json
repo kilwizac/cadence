@@ -3,6 +3,12 @@
   "productName": "Cadence",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": "Zachary Kilwin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kilwizac/cadence.git"
+  },
   "description": "Map, document and improve business systems on an isometric canvas.",
   "main": "electron/launch.cjs",
   "scripts": {
@@ -11,12 +17,13 @@
     "build:electron": "bun build electron/main.ts electron/preload.ts --outdir dist-electron --target node --format cjs --external electron",
     "build:renderer": "vite build",
     "build": "bun run typecheck && bun run build:renderer && bun run build:electron",
+    "notices": "bun scripts/generate-third-party-notices.ts",
     "start": "bun run build && electron .",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "smoke": "bun run build && bun scripts/smoke.ts",
     "icon:mac": "bun scripts/generate-icon.ts",
-    "package:mac": "bun run build && electron-builder --mac --arm64 --x64 --publish never"
+    "package:mac": "bun run build && bun run notices && electron-builder --mac --arm64 --x64 --publish never"
   },
   "trustedDependencies": [
     "electron",

@@ -1,11 +1,18 @@
-appId: com.midwestmachining.cadence
+appId: com.kilwizac.cadence
 directories:
   output: release
 files:
   - dist/**/*
   - dist-electron/**/*
   - electron/launch.cjs
+  - LICENSE
+  - THIRD_PARTY_NOTICES.txt
   - '!node_modules'
+extraResources:
+  - from: node_modules/electron/dist/LICENSE
+    to: licenses/Electron-LICENSE.txt
+  - from: node_modules/electron/dist/LICENSES.chromium.html
+    to: licenses/Chromium-LICENSES.html
 npmRebuild: false
 artifactName: ${productName}-${version}-${arch}.${ext}
 mac:

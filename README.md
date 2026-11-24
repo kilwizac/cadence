@@ -28,6 +28,12 @@ Pushes to `main` run typecheck, unit tests, and build in GitHub Actions. To crea
 
 Signing and notarization are optional. Set `CSC_LINK` and `CSC_KEY_PASSWORD` to use a Developer ID Application certificate. Also set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID` to notarize the signed app. For GitHub Actions, set these as repository secrets; for a local release, set them in your environment. For a local build without a Developer ID signature, set `CSC_IDENTITY_AUTO_DISCOVERY=false`. macOS may block unsigned or unnotarized downloads, so sign and notarize builds intended for distribution.
 
+Cadence is released under the [MIT License](LICENSE). `package:mac` includes the project license, generated third-party dependency notices, Electron's license, Chromium's notices, and the 3D asset notices in the distributable. Regenerate the dependency notice after changing runtime dependencies:
+
+```sh
+bun run notices
+```
+
 ## Using it
 
 - **Create a company profile** to start your map. Click the company name in the toolbar to edit the profile later.
@@ -45,7 +51,7 @@ Everything is saved automatically to `~/Library/Application Support/Cadence/`: `
 
 ## 3D assets
 
-The map is rendered with React Three Fiber using an orthographic isometric camera. Models live in `src/renderer/public/models/`, curated from Kenney's Factory Kit, City Kit Industrial, City Kit Commercial and Car Kit (CC0, see `LICENSE-kenney.txt`). `src/renderer/map/assets.ts` maps each area type to a main building and the props that appear as processes are added; swap a model by dropping a `.glb` into the matching folder and changing its id there.
+The map is rendered with React Three Fiber using an orthographic isometric camera. Models live in `src/renderer/public/models/`, curated from Kenney's Factory Kit, City Kit Industrial, City Kit Commercial and Car Kit (CC0). See `ASSET_MANIFEST.md` for source, license and SHA-256 provenance, and `LICENSE-kenney.txt` for the retained original Kenney notice. `src/renderer/map/assets.ts` maps each area type to a main building and the props that appear as processes are added; swap a model by dropping a `.glb` into the matching folder and changing its id there.
 
 ## Layout
 
