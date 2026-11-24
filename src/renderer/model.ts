@@ -88,7 +88,10 @@ export function migrate(raw: unknown): Workspace {
     version: number;
     areas: (Area & { processes: (Process & { owner?: string })[] })[];
   };
+  workspace.name ??= DEFAULT_WORKSPACE_NAME;
   workspace.people ??= [];
+  workspace.areas ??= [];
+  workspace.flows ??= [];
   const name = workspace.name.trim();
   const hasExistingWork = workspace.areas.length > 0 || workspace.people.length > 0 || workspace.flows.length > 0;
   const hasCustomName = name !== "" && name !== DEFAULT_WORKSPACE_NAME;
@@ -105,8 +108,13 @@ export function migrate(raw: unknown): Workspace {
   const peopleByName = new Map(workspace.people.map((person) => [person.name.trim().toLowerCase(), person]));
   for (const area of workspace.areas) {
     area.kind ??= guessKind(area.name);
+    area.processes ??= [];
+    area.sops ??= [];
+    area.notes ??= [];
     for (const process of area.processes) {
       process.raci ??= emptyRaci();
+      process.steps ??= [];
+      process.sopIds ??= [];
       const name = process.owner?.trim();
       if (process.ownerId == null && name) {
         const key = name.toLowerCase();
