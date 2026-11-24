@@ -87,7 +87,7 @@ function Shell({ workspace, saveState, update }: { workspace: Workspace; saveSta
   );
 
   useEffect(() => {
-    if (saveState === "error") notifications.show({ id: "save-error", color: "red", title: "Couldn't save", message: "Your latest changes aren't on disk yet. Keep the app open and try again." });
+    if (saveState === "error") notifications.show({ id: "save-error", color: "red", title: "Couldn't save", message: "Your latest changes aren't on disk yet. Keep the app open; Cadence will keep retrying." });
   }, [saveState]);
 
   useEffect(() => {

@@ -24,8 +24,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [workspaceSession, setWorkspaceSession] = useState(0);
   const [restoring, setRestoring] = useState(false);
+  const [saveAttempt, setSaveAttempt] = useState(0);
   const saved = useRef<Workspace | null>(null);
+  const latest = useRef<Workspace | null>(null);
   const restoreLock = useRef(false);
+
+  useEffect(() => {
+    latest.current = workspace;
+  }, [workspace]);
+
+  useEffect(() => {
+    // The debounced save below is dropped if the window closes inside its delay, so push any unsaved edits out on unload.
+    const flush = () => {
+      const current = latest.current;
+      if (current && current !== saved.current && !restoreLock.current) void storage.saveWorkspace(current);
+    };
+    window.addEventListener("beforeunload", flush);
+    return () => window.removeEventListener("beforeunload", flush);
+  }, []);
 
   useEffect(() => {
     storage
@@ -41,7 +57,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!workspace || workspace === saved.current || restoring) return;
     let active = true;
-    setSaveState("saving");
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    setSaveState((state) => (state === "error" ? state : "saving"));
     const timer = setTimeout(() => {
       if (restoreLock.current) return;
       storage.saveWorkspace(workspace).then(
@@ -50,14 +67,19 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           saved.current = workspace;
           setSaveState("saved");
         },
-        () => { if (active) setSaveState("error"); },
+        () => {
+          if (!active) return;
+          setSaveState("error");
+          retry = setTimeout(() => setSaveAttempt((attempt) => attempt + 1), 5000);
+        },
       );
     }, 300);
     return () => {
       active = false;
       clearTimeout(timer);
+      clearTimeout(retry);
     };
-  }, [workspace, restoring]);
+  }, [workspace, restoring, saveAttempt]);
 
   const update = useCallback<Update>((recipe) => {
     if (restoreLock.current) return;

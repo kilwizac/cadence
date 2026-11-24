@@ -22,14 +22,17 @@ const attachmentPath = (storedName: string) => {
 };
 
 let dataQueue: Promise<unknown> = Promise.resolve();
+let pendingData = 0;
 let dailyBackupPending = false;
 let lastBackupDay = "";
 const attachmentDeletes = new Set<string>();
 const selectedBackups = new WeakMap<WebContents, string>();
 
 function withData<T>(operation: () => Promise<T>): Promise<T> {
+  pendingData++;
   const next = dataQueue.then(operation, operation);
   dataQueue = next;
+  void next.finally(() => pendingData--).catch(() => {});
   return next;
 }
 
@@ -173,8 +176,12 @@ function createWindow(offscreen: boolean) {
   });
 
   window.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith("https://")) shell.openExternal(url);
+    if (/^(https?:|mailto:)/i.test(url)) shell.openExternal(url);
     return { action: "deny" };
+  });
+  // Dropping a file outside a dropzone (or following a stray link) would otherwise replace the app with that page.
+  window.webContents.on("will-navigate", (event, url) => {
+    if (url !== window.webContents.getURL()) event.preventDefault();
   });
 
   return { window, loaded: window.loadURL(process.env.VITE_DEV_SERVER_URL ?? "app://bundle/index.html") };
@@ -193,6 +200,12 @@ export async function startCadence({ offscreen = false } = {}) {
       if (process.platform !== "darwin") app.quit();
     });
   }
+  // Let a save sent while the last window was closing reach disk before the process exits.
+  app.on("will-quit", (event) => {
+    if (pendingData === 0) return;
+    event.preventDefault();
+    void dataQueue.catch(() => {}).finally(() => app.quit());
+  });
   const { window, loaded } = createWindow(offscreen);
   scheduleDailyBackup();
   setInterval(scheduleDailyBackup, 60 * 60 * 1000).unref();
