@@ -10,6 +10,8 @@ export function ConnectionsTab({ area, workspace, update }: { area: Area; worksp
   const [target, setTarget] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const others = workspace.areas.filter((a) => a.id !== area.id);
+  const linked = new Set(workspace.flows.filter((flow) => flow.from === area.id).map((flow) => flow.to));
+  const targets = others.filter((other) => !linked.has(other.id));
   const nameOf = (id: string) => workspace.areas.find((a) => a.id === id)?.name || "Untitled area";
   const outgoing = workspace.flows.filter((flow) => flow.from === area.id);
   const incoming = workspace.flows.filter((flow) => flow.to === area.id);
@@ -40,8 +42,9 @@ export function ConnectionsTab({ area, workspace, update }: { area: Area; worksp
           <Stack gap="xs">
             <Select
               label="Feeds into"
-              placeholder="Choose an area"
-              data={others.map((other) => ({ value: other.id, label: other.name || "Untitled area" }))}
+              placeholder={targets.length ? "Choose an area" : "Already feeds every area"}
+              disabled={targets.length === 0}
+              data={targets.map((other) => ({ value: other.id, label: other.name || "Untitled area" }))}
               value={target}
               onChange={setTarget}
             />
